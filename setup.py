@@ -8,5 +8,6 @@ setuptools.setup(
     install_requires=[
         "requests",
         "configargparse",
+        "colorama",
     ]
  )
