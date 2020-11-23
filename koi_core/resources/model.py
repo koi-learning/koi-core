@@ -57,7 +57,7 @@ class Model:
     code: Code
     visual_plugin: Any
     request_plugin: Any
-    instances: "Instance"
+    instances: Iterable["Instance"]
 
     def new_instance(self) -> "Instance":
         ...
