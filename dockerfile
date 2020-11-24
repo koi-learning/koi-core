@@ -1,3 +1,3 @@
-FROM python:3.8-alpine
+FROM tensorflow/tensorflow
 COPY . /src
 RUN pip install ./src
