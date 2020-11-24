@@ -16,7 +16,20 @@ If you want to install *koi-core* for production use, simply run:
 For development purposes it is best to check out the repository and install all dependencies listet in *requirements.txt*
 
 ## Using Docker
-comming soon...
+If you want to use *koi-core* from within a docker container see the included example [dockerfile](dockerfile).
+
+Switch to the source folder and build it with: 
+```
+docker build . -t <name of your container>
+```
+
+To use the worker inside the docker container run:
+
+```
+docker exec -it <name of your container> koi-worker.py <options>
+```
+
+For a complete setup using docker see [koi-deploy](https://github.com/koi-learning/koi-deploy) 
 
 # Using koi-core
 *koi-core* comes with a worker-client.
