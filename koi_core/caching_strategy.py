@@ -16,9 +16,12 @@
 from datetime import datetime
 
 
-class CachingMeta:
-    expires: datetime
-    last_modified: datetime
+class CachingStrategy:
+    def isValid(self, proxy, key, meta):
+        ...
+
+    def shouldPersist(self, proxy, key, meta):
+        ...
 
 
 class ExpireCachingStrategy:
@@ -30,7 +33,20 @@ class ExpireCachingStrategy:
         else:
             return True
 
+    def shouldPersist(self, proxy, key, meta):
+        t = type(proxy).__name__
+        if t == "ModelProxy":
+            if key == "code":
+                return False
+            return True
+        if t == "InstanceProxy":
+            return True
+        return False
+
 
 class LocalOnlyCachingStrategy:
     def isValid(self, proxy, key, meta):
         return True
+
+    def shouldPersist(self, proxy, key, meta):
+        return False
