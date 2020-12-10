@@ -34,7 +34,7 @@ def deinit():
 
 
 def create_api_object_pool(
-    host: str, username: str, password: str, persistance_file: str
+    host: str, username: str, password: str, persistance_file=None
 ):
     if persistance_file:
         setCachingPersistence(CachingPersistence(persistance_file))
