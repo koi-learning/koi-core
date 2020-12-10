@@ -13,6 +13,11 @@
 # GNU Lesser General Public License is distributed along with this
 # software and can be found at http://www.gnu.org/licenses/lgpl.html
 
+from koi_core.caching_persistence import (
+    CachingPersistence,
+    getCachingPersistence,
+    setCachingPersistence,
+)
 from koi_core.api import API
 from koi_core.resources.model import LocalCode
 from koi_core.resources.instance import Instance
@@ -24,7 +29,15 @@ def init():
     pass
 
 
-def create_api_object_pool(host: str, username: str, password: str):
+def deinit():
+    getCachingPersistence().persistify()
+
+
+def create_api_object_pool(
+    host: str, username: str, password: str, persistance_file: str
+):
+    if persistance_file:
+        setCachingPersistence(CachingPersistence(persistance_file))
     api = API(host, username, password)
     return APIObjectPool(api)
 

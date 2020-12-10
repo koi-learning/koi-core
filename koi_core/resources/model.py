@@ -121,9 +121,13 @@ class ModelProxy(Model):
 
     @property
     @cache
+    def _code(self, meta) -> bytes:
+        return self.pool.api.get_model_code(self.id, meta)
+
+    @property
+    @cache
     def code(self, meta) -> Code:
-        tmp = self.pool.api.get_model_code(self.id, meta)
-        return RemoteCode(tmp[0]), tmp[1]
+        return RemoteCode(self._code), meta
 
     @code.setter
     def code(self, value: Code) -> None:

@@ -13,54 +13,66 @@
 # GNU Lesser General Public License is distributed along with this
 # software and can be found at http://www.gnu.org/licenses/lgpl.html
 
+import datetime
 from functools import wraps
-from typing import Dict, TypeVar
-
-
-class CachingObject:
-    _cache: Dict
+from koi_core.caching_strategy import CachingStrategy
+from koi_core.caching_persistence import getCachingPersistence
+from typing import Any, Dict, Hashable, Tuple, TypeVar
 
 
 class CachingMeta:
-    pass
+    expires: datetime
+    last_modified: datetime
+
+
+CachingDict = Dict[str, Dict[Any, Tuple[Any, CachingMeta]]]
+
+
+class CachingObject:
+    _cache: CachingDict
+    id: Hashable
+    cachingStrategy: CachingStrategy
 
 
 T = TypeVar("T")
 
 
-def setCache(self, key: str, value: T) -> T:
+def setCache(self: CachingObject, key: str, value: T) -> T:
     if not hasattr(self, "_cache"):
-        self._cache = dict()
-    self._cache[key] = value
+        self._cache = getCachingPersistence().getCache(self)
+    self._cache[key] = value  # type: ignore
     return value
 
 
 def setIndexedCache(self, key: str, index, value: T) -> T:
     if not hasattr(self, "_cache"):
-        self._cache = dict()
+        self._cache = getCachingPersistence().getCache(self)
     if key not in self._cache:
-        self._cache[key] = dict()
-    self._cache[key][index] = (value, None)
+        self._cache[key] = dict()  # type: ignore
+    self._cache[key][index] = (value, None)  # type: ignore
     return value
 
 
 def cache(func: T) -> T:
     key = func.__name__
 
-    def wrapper(self: CachingObject):
+    @wraps(func)
+    def wrapper(self):
         if not hasattr(self, "_cache"):
-            self._cache = dict()
-
+            self._cache = getCachingPersistence().getCache(self)
         if key not in self._cache:
-            self._cache[key] = func(self, None)
-        elif not self.cachingStrategy.isValid(self, key, self._cache[key][1]):
-            obj, new_meta = func(self, self._cache[key][1])
+            self._cache[key] = dict()  # type: ignore
+
+        if 0 not in self._cache[key]:
+            self._cache[key][0] = func(self, None)  # type: ignore
+        elif not self.cachingStrategy.isValid(self, key, self._cache[key][0][1]):
+            obj, new_meta = func(self, self._cache[key][0][1])
             if obj is None:
                 # we receive None in case no update was needed
-                self._cache[key] = (self._cache[key][0], new_meta)
+                self._cache[key][0] = (self._cache[key][0][0], new_meta)  # type: ignore
             else:
-                self._cache[key] = (obj, new_meta)
-        return self._cache[key][0]
+                self._cache[key][0] = (obj, new_meta)  # type: ignore
+        return self._cache[key][0][0]
 
     return wrapper
 
@@ -71,19 +83,19 @@ def indexedCache(func: T) -> T:
     @wraps(func)
     def wrapper(self, index):
         if not hasattr(self, "_cache"):
-            self._cache = dict()
+            self._cache = getCachingPersistence().getCache(self)
         if key not in self._cache:
-            self._cache[key] = dict()
+            self._cache[key] = dict()  # type: ignore
 
         if index not in self._cache[key]:
-            self._cache[key][index] = func(self, index, None)
+            self._cache[key][index] = func(self, index, None)  # type: ignore
         elif not self.cachingStrategy.isValid(self, key, self._cache[key][index][1]):
             obj, new_meta = func(self, index, self._cache[key][index][1])
             if obj is None:
                 # we receive None in case no update was needed
-                self._cache[key][index] = (self._cache[key][index][0], new_meta)
+                self._cache[key][index] = (self._cache[key][index][0], new_meta)  # type: ignore
             else:
-                self._cache[key][index] = (obj, new_meta)
+                self._cache[key][index] = (obj, new_meta)  # type: ignore
         return self._cache[key][index][0]
 
     return wrapper

@@ -63,6 +63,8 @@ class LocalOnlyObjectPool:
 class APIObjectPool:
     cachingStrategy = ExpireCachingStrategy()
     api: API
+    @property
+    def id(self): return hash("APIObjectPool"+self.api._base_url)
 
     def __init__(self, api: API) -> None:
         self.api = api
