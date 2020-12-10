@@ -17,16 +17,22 @@ import io
 import koi_core as koi
 
 
-def run_all_models(persistence):
+def run_all_models(persistence=None):
     koi.init()
 
-    pool = koi.create_api_object_pool(
-        host="testing://base",
-        username="user",
-        password="password",
-        persistance_file=persistence,
-    )
-
+    if persistence:
+        pool = koi.create_api_object_pool(
+            host="testing://base",
+            username="user",
+            password="password",
+            persistance_file=persistence,
+        )
+    else:
+        pool = koi.create_api_object_pool(
+            host="testing://base",
+            username="user",
+            password="password"
+        )
     models = pool.get_all_models()
     for model in models:
         instances = model.instances
