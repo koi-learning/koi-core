@@ -102,3 +102,23 @@ class InstanceDescriptorAccessor:
         accessor._get_data = self.instance._get_descriptors
         accessor._new_datum = self.instance._new_descriptor
         return accessor
+
+
+class SampleTagAccessor:
+    def __init__(self, sample: 'Sample') -> None:
+        self.sample = sample
+
+    def __len__(self):
+        return len(self.sample._tags)
+
+    def __contains__(self, item):
+        return item in self.sample._tags
+
+    def add(self, item):
+        self.sample._add_tag(item)
+
+    def discard(self, item):
+        self.sample._remove_tag(item)
+
+    def __str__(self):
+        return self.sample._tags.__str__()
