@@ -235,6 +235,10 @@ class API:
         return self._session.head(self._base_url + path, auth=auth)
 
     @authenticated_json
+    def _DELETE(self, path: str, auth: AuthBase):
+        return self._session.delete(self._base_url + path, auth=auth)
+
+    @authenticated_json
     def _POST(self, path: str, auth: AuthBase, data: Any = None):
         return self._session.post(self._base_url + path, json=data, auth=auth)
 
@@ -462,6 +466,30 @@ class API:
 
     def update_sample(self, id: SampleId, update: SampleBasicFields):
         self._PUT(self._build_path(id), data=_encode_sample(update))
+
+    def get_tags(self, id: SampleId, meta: CachingMeta = None):
+        path = self._build_path(id) + "/tags"
+        if meta is None:
+            json_resp, new_meta = self._GET(path)
+            return {obj['name'] for obj in json_resp}, new_meta
+        else:
+            new_meta = self._HEAD(path)
+            if new_meta.last_modified > meta.last_modified:
+                json_resp, new_meta = self._GET(path)
+                return {obj['name'] for obj in json_resp}, new_meta
+            else:
+                return None, new_meta
+
+    def update_tags(self, id: SampleId, update: set):
+        new_tags = [{'name': x} for x in update]
+        self._DELETE(self._build_path(id) + "/tags")
+        self._PUT(self._build_path(id) + "/tags", data=new_tags)
+
+    def add_tag(self, id: SampleId, item: str):
+        self._PUT(self._build_path(id) + "/tags", data=[{"name": item}, ])
+
+    def remove_tag(self, id: SampleId, item: str):
+        self._DELETE(self._build_path(id) + "/tags/"+item)
 
     def request_label(self, id: SampleId):
         self._POST(
