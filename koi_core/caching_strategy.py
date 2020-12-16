@@ -25,7 +25,7 @@ class ExpireCachingStrategy:
     def isValid(self, proxy, key, meta):
         now = datetime.utcnow()
 
-        if meta is None or now > meta.expires:
+        if meta is None or now >= meta.expires:
             return False
         else:
             return True

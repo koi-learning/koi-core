@@ -15,7 +15,7 @@
 
 from koi_core.caching import cache
 from koi_core.resources.ids import InstanceId, SampleDatumId, SampleId
-from koi_core.resources.sample_instance_util import SampleDataAccessor, SampleLabelsAccessor
+from koi_core.resources.sample_instance_util import SampleDataAccessor, SampleLabelsAccessor, SampleTagAccessor
 from uuid import UUID, uuid4
 from typing import Any, Iterable, List, TYPE_CHECKING, Union
 
@@ -41,8 +41,6 @@ class SampleDatumBasicFields:
 class Sample:
     id: SampleId
     finalized: bool
-    consumed: bool
-    obsolete: bool
     instance: "Instance"
 
     def request_label(self) -> None:
@@ -68,12 +66,11 @@ class LocalSample(Sample):
         self.id = id
         self._data = list()
         self._labels = list()
+        self._tags = list()
         self.data = SampleDataAccessor(self)
         self.labels = SampleLabelsAccessor(self)
-
+        self.tags = SampleTagAccessor(self)
         self.finalized = False
-        self.consumed = False
-        self.obsolete = False
 
     def _get_data(self) -> Iterable[SampleDatum]:
         return self._data
@@ -93,14 +90,18 @@ class LocalSample(Sample):
         datum.raw = raw
         self._labels.append(datum)
 
+    def _add_tag(self, tag) -> None:
+        self._tags.add(tag)
+
+    def _remove_tag(self, tag) -> None:
+        self._tags.discard(tag)
+
     def request_label(self) -> None:
         print('Label Request')
 
 
 class SampleBasicFields:
     finalized: bool
-    consumed: bool
-    obsolete: bool
 
 
 class SampleDatumProxy(SampleDatum):
@@ -189,6 +190,11 @@ class SampleProxy(Sample):
     def _basic_fields(self, value: SampleBasicFields) -> None:
         return self.pool.api.update_sample(self.id, value)
 
+    @property
+    @cache
+    def _tags(self, meta):
+        return self.pool.api.get_tags(self.id, meta)
+
     def __getattr__(self, name: str) -> Any:
         if name in SampleBasicFields.__annotations__:
             return self._basic_fields.__getattribute__(name)
@@ -210,6 +216,7 @@ class SampleProxy(Sample):
         self.id = id
         self.data = SampleDataAccessor(self)
         self.labels = SampleLabelsAccessor(self)
+        self.tags = SampleTagAccessor(self)
 
     @cache
     def _get_data(self, meta) -> Iterable[SampleDatum]:
@@ -232,6 +239,12 @@ class SampleProxy(Sample):
         label = SampleLabelProxy(self.pool, labelId)
         label.key = key
         label.raw = raw
+
+    def _add_tag(self, tag) -> None:
+        self.pool.api.add_tag(self.id, tag)
+
+    def _remove_tag(self, tag) -> None:
+        self.pool.api.remove_tag(self.id, tag)
 
     def request_label(self) -> None:
         self.pool.api.request_label(self.id)
