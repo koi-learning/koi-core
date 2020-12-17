@@ -65,8 +65,12 @@ def authenticated_head(request_func: T) -> T:
         meta = None
         if "Expires" in response.headers and "Last-Modified" in response.headers:
             meta = CachingMeta()
-            meta.expires = datetime.strptime(response.headers["Expires"], "%a, %d %b %Y %H:%M:%S GMT")
-            meta.last_modified = datetime.strptime(response.headers["Last-Modified"], "%a, %d %b %Y %H:%M:%S GMT")
+            meta.expires = datetime.strptime(
+                response.headers["Expires"], "%a, %d %b %Y %H:%M:%S GMT"
+            )
+            meta.last_modified = datetime.strptime(
+                response.headers["Last-Modified"], "%a, %d %b %Y %H:%M:%S GMT"
+            )
 
         return meta
 
@@ -93,8 +97,12 @@ def authenticated_json(request_func: T) -> T:
         meta = None
         if "Expires" in response.headers:
             meta = CachingMeta()
-            meta.expires = datetime.strptime(response.headers["Expires"], "%a, %d %b %Y %H:%M:%S GMT")
-            meta.last_modified = datetime.strptime(response.headers["Last-Modified"], "%a, %d %b %Y %H:%M:%S GMT")
+            meta.expires = datetime.strptime(
+                response.headers["Expires"], "%a, %d %b %Y %H:%M:%S GMT"
+            )
+            meta.last_modified = datetime.strptime(
+                response.headers["Last-Modified"], "%a, %d %b %Y %H:%M:%S GMT"
+            )
 
         return response.json(), meta
 
@@ -123,8 +131,12 @@ def authenticated_raw(request_func: T) -> T:
         meta = None
         if "Expires" in response.headers:
             meta = CachingMeta()
-            meta.expires = datetime.strptime(response.headers["Expires"], "%a, %d %b %Y %H:%M:%S GMT")
-            meta.last_modified = datetime.strptime(response.headers["Last-Modified"], "%a, %d %b %Y %H:%M:%S GMT")
+            meta.expires = datetime.strptime(
+                response.headers["Expires"], "%a, %d %b %Y %H:%M:%S GMT"
+            )
+            meta.last_modified = datetime.strptime(
+                response.headers["Last-Modified"], "%a, %d %b %Y %H:%M:%S GMT"
+            )
 
         return response.content, meta
 
@@ -259,7 +271,10 @@ class API:
         return self._session.post(self._base_url + path, data=data, auth=auth)
 
     def _build_path(
-        self, id: Union[ModelId, InstanceId, SampleId, SampleDatumId, SampleLableId, DescriptorId]
+        self,
+        id: Union[
+            ModelId, InstanceId, SampleId, SampleDatumId, SampleLableId, DescriptorId
+        ],
     ):
         path = "/api"
 
@@ -413,7 +428,10 @@ class API:
     def get_descriptors(self, id: InstanceId, meta: CachingMeta = None):
         data, meta = self._GET(self._build_path(id) + "/descriptor")
         return (
-            [DescriptorId(id=id, descriptor_uuid=UUID(d["descriptor_uuid"])) for d in data],
+            [
+                DescriptorId(id=id, descriptor_uuid=UUID(d["descriptor_uuid"]))
+                for d in data
+            ],
             meta,
         )
 
@@ -439,8 +457,16 @@ class API:
     # endregion descriptor
 
     # region sample
-    def get_samples(self, id: InstanceId, filter_obsolete=True):
-        data, meta = self._GET(self._build_path(id) + "/sample", parameter={"filter_obsolete": filter_obsolete})
+    def get_samples(self, id: InstanceId, filter_include: list = None, filter_exclude: list = None):
+        params = {}
+        if filter_include is not None:
+            params["inc_tags"] = filter_include
+        if filter_exclude is not None:
+            params["exc_tags"] = filter_exclude
+        data, meta = self._GET(
+            self._build_path(id) + "/sample",
+            parameter=params,
+        )
         return (
             [SampleId(id=id, sample_uuid=UUID(d["sample_uuid"])) for d in data],
             meta,
@@ -471,29 +497,30 @@ class API:
         path = self._build_path(id) + "/tags"
         if meta is None:
             json_resp, new_meta = self._GET(path)
-            return {obj['name'] for obj in json_resp}, new_meta
+            return {obj["name"] for obj in json_resp}, new_meta
         else:
             new_meta = self._HEAD(path)
             if new_meta.last_modified > meta.last_modified:
                 json_resp, new_meta = self._GET(path)
-                return {obj['name'] for obj in json_resp}, new_meta
+                return {obj["name"] for obj in json_resp}, new_meta
             else:
                 return None, new_meta
 
     def update_tags(self, id: SampleId, update: set):
-        new_tags = [{'name': x} for x in update]
+        new_tags = [{"name": x} for x in update]
         self._DELETE(self._build_path(id) + "/tags")
         self._PUT(self._build_path(id) + "/tags", data=new_tags)
 
     def add_tag(self, id: SampleId, item: str):
-        self._PUT(self._build_path(id) + "/tags", data=[{"name": item}, ])
+        self._PUT(self._build_path(id) + "/tags", data=[{"name": item},])
 
     def remove_tag(self, id: SampleId, item: str):
-        self._DELETE(self._build_path(id) + "/tags/"+item)
+        self._DELETE(self._build_path(id) + "/tags/" + item)
 
     def request_label(self, id: SampleId):
         self._POST(
-            self._build_path(id.InstanceId) + "/label_request", data={"sample_uuid": id.sample_uuid.hex},
+            self._build_path(id.InstanceId) + "/label_request",
+            data={"sample_uuid": id.sample_uuid.hex},
         )
 
     # endregion
@@ -502,7 +529,10 @@ class API:
     def get_sample_data(self, id: SampleId):
         data, meta = self._GET(self._build_path(id) + "/data")
         return (
-            [SampleDatumId(id=id, sample_datum_uuid=UUID(d["data_uuid"])) for d in data],
+            [
+                SampleDatumId(id=id, sample_datum_uuid=UUID(d["data_uuid"]))
+                for d in data
+            ],
             meta,
         )
 
@@ -547,7 +577,10 @@ class API:
     def get_sample_labels(self, id: SampleId):
         data, meta = self._GET(self._build_path(id) + "/label")
         return (
-            [SampleLableId(id=id, sample_label_uuid=UUID(d["label_uuid"])) for d in data],
+            [
+                SampleLableId(id=id, sample_label_uuid=UUID(d["label_uuid"]))
+                for d in data
+            ],
             meta,
         )
 
