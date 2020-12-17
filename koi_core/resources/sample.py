@@ -241,7 +241,7 @@ class SampleProxy(Sample):
 
     @property
     @cache
-    def __get_labels(self, meta) -> Iterable[SampleLabel]:
+    def __get_labels(self, meta) -> List[SampleLabel]:
         return self.pool.api.get_sample_labels(self.id)
 
     @cache
