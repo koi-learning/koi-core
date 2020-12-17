@@ -16,7 +16,10 @@
 from koi_core.caching import cache
 from koi_core.resources.model import Model
 from koi_core.resources.ids import InstanceId, ModelId, SampleId, DescriptorId
-from koi_core.resources.sample_instance_util import InstanceDescriptorAccessor
+from koi_core.resources.sample_instance_util import (
+    InstanceDescriptorAccessor,
+    SampleAccessor,
+)
 from typing import Any, Dict, Iterable, List, TYPE_CHECKING, Union
 from uuid import uuid4
 from koi_core.resources.sample import Sample
@@ -56,8 +59,9 @@ class LocalDescriptor:
 
 
 class DescriptorProxy(Descriptor):
-
-    def __init__(self, pool: "APIObjectPool", id: Union[DescriptorId, InstanceId, ModelId]) -> None:
+    def __init__(
+        self, pool: "APIObjectPool", id: Union[DescriptorId, InstanceId, ModelId]
+    ) -> None:
         self.pool = pool
         if not isinstance(id, DescriptorId):
             id = DescriptorId(id.model_uuid, id.instance_uuid, uuid4())
@@ -122,18 +126,15 @@ class Instance:
 class LocalInstance(Instance):
     _sample_ids: List[SampleId] = list()
 
-    @property
-    def samples(self) -> Iterable[Sample]:
+    def get_samples(self, filter_include: list = None, filter_exclude: list = None):
         temp = [self.pool.sample(s) for s in self._sample_ids]
-        return [s for s in temp if not s.obsolete]
 
-    @property
-    def samples_consumed(self) -> Iterable[Sample]:
-        return list(filter(_consumed_filter, self.samples))
-
-    @property
-    def samples_unconsumed(self) -> Iterable[Sample]:
-        return list(filter(_unconsumed_filter, self.samples))
+        return [
+            s
+            for s in temp
+            if True in [a in filter_include for a in s.tags]
+            and True not in [a in filter_exclude for a in s.tags]
+        ]
 
     def __init__(
         self, pool: "LocalOnlyObjectPool", id: Union[InstanceId, ModelId]
@@ -230,19 +231,9 @@ class InstanceProxy(Instance):
     def inference_data(self, value):
         self.pool.api.set_instance_inference_data(self.id, value)
 
-    @property
-    @cache
-    def samples(self, meta) -> Iterable[Sample]:
-        data, meta = self.pool.api.get_samples(self.id)
-        return [self.pool.sample(id) for id in data], meta
-
-    @property
-    def samples_consumed(self) -> Iterable[Sample]:
-        return list(filter(_consumed_filter, self.samples))
-
-    @property
-    def samples_unconsumed(self) -> Iterable[Sample]:
-        return list(filter(_unconsumed_filter, self.samples))
+    def get_samples(self, filter_include: list = None, filter_exclude: list = None):
+        data, _ = self.pool.api.get_samples(self.id, filter_include, filter_exclude)
+        return [self.pool.sample(id) for id in data]
 
     @cache
     def _get_descriptors(self, meta) -> Iterable[Descriptor]:
