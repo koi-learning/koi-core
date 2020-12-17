@@ -123,18 +123,15 @@ class Instance:
 class LocalInstance(Instance):
     _sample_ids: List[SampleId] = list()
 
-    @property
-    def samples(self) -> Iterable[Sample]:
+    def get_samples(self, filter_include: list = None, filter_exclude: list = None):
         temp = [self.pool.sample(s) for s in self._sample_ids]
-        return [s for s in temp if not s.obsolete]
 
-    @property
-    def samples_consumed(self) -> Iterable[Sample]:
-        return list(filter(_consumed_filter, self.samples))
-
-    @property
-    def samples_unconsumed(self) -> Iterable[Sample]:
-        return list(filter(_unconsumed_filter, self.samples))
+        return [
+            s
+            for s in temp
+            if True in [a in filter_include for a in s.tags]
+            and True not in [a in filter_exclude for a in s.tags]
+        ]
 
     def __init__(
         self, pool: "LocalOnlyObjectPool", id: Union[InstanceId, ModelId]
@@ -231,22 +228,9 @@ class InstanceProxy(Instance):
     def inference_data(self, value):
         self.pool.api.set_instance_inference_data(self.id, value)
 
-    @property
-    @cache
-    def _samples(self, meta) -> List[SampleId]:
-        return self.pool.api.get_samples(self.id)
-
-    @property
-    def samples(self, meta) -> Iterable[Sample]:
-        return [self.pool.sample(id) for id in self._samples]
-
-    @property
-    def samples_consumed(self) -> Iterable[Sample]:
-        return list(filter(_consumed_filter, self.samples))
-
-    @property
-    def samples_unconsumed(self) -> Iterable[Sample]:
-        return list(filter(_unconsumed_filter, self.samples))
+    def get_samples(self, filter_include: list = None, filter_exclude: list = None):
+        data, _ = self.pool.api.get_samples(self.id, filter_include, filter_exclude)
+        return [self.pool.sample(id) for id in data]
 
     @property
     @cache
