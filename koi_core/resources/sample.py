@@ -15,7 +15,10 @@
 
 from koi_core.caching import cache
 from koi_core.resources.ids import InstanceId, SampleDatumId, SampleId
-from koi_core.resources.sample_instance_util import SampleDataAccessor, SampleLabelsAccessor
+from koi_core.resources.sample_instance_util import (
+    SampleDataAccessor,
+    SampleLabelsAccessor,
+)
 from uuid import UUID, uuid4
 from typing import Any, Iterable, List, TYPE_CHECKING, Union
 
@@ -61,7 +64,9 @@ class LocalSample(Sample):
     def uuid(self) -> UUID:
         return self.id.sample_uuid
 
-    def __init__(self, pool: "LocalOnlyObjectPool", id: Union[SampleId, InstanceId]) -> None:
+    def __init__(
+        self, pool: "LocalOnlyObjectPool", id: Union[SampleId, InstanceId]
+    ) -> None:
         self.pool = pool
         if not isinstance(id, SampleId):
             id = SampleId(id.model_uuid, id.instance_uuid, uuid4())
@@ -94,7 +99,7 @@ class LocalSample(Sample):
         self._labels.append(datum)
 
     def request_label(self) -> None:
-        print('Label Request')
+        print("Label Request")
 
 
 class SampleBasicFields:
@@ -211,10 +216,13 @@ class SampleProxy(Sample):
         self.data = SampleDataAccessor(self)
         self.labels = SampleLabelsAccessor(self)
 
+    @property
     @cache
+    def __get_data(self, meta) -> List[SampleDatumId]:
+        return self.pool.api.get_sample_data(self.id)
+
     def _get_data(self, meta) -> Iterable[SampleDatum]:
-        data, meta = self.pool.api.get_sample_data(self.id)
-        return [SampleDatumProxy(self.pool, d) for d in data], meta
+        return [SampleDatumProxy(self.pool, d) for d in self.__get_data]
 
     def _new_datum(self, key: str, raw: Any) -> None:
         datumId, _ = self.pool.api.new_sample_datum(self.id)
@@ -222,10 +230,14 @@ class SampleProxy(Sample):
         datum.key = key
         datum.raw = raw
 
+    @property
     @cache
-    def _get_labels(self, meta) -> Iterable[SampleLabel]:
-        data, meta = self.pool.api.get_sample_labels(self.id)
-        return [SampleLabelProxy(self.pool, d) for d in data], meta
+    def __get_labels(self, meta) -> Iterable[SampleLabel]:
+        return self.pool.api.get_sample_labels(self.id)
+
+    @cache
+    def _get_labels(self) -> Iterable[SampleLabel]:
+        return [SampleLabelProxy(self.pool, d) for d in self.__get_labels]
 
     def _new_label(self, key: str, raw: Any) -> None:
         labelId, _ = self.pool.api.new_sample_label(self.id)

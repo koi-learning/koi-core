@@ -56,8 +56,9 @@ class LocalDescriptor:
 
 
 class DescriptorProxy(Descriptor):
-
-    def __init__(self, pool: "APIObjectPool", id: Union[DescriptorId, InstanceId, ModelId]) -> None:
+    def __init__(
+        self, pool: "APIObjectPool", id: Union[DescriptorId, InstanceId, ModelId]
+    ) -> None:
         self.pool = pool
         if not isinstance(id, DescriptorId):
             id = DescriptorId(id.model_uuid, id.instance_uuid, uuid4())
@@ -232,9 +233,12 @@ class InstanceProxy(Instance):
 
     @property
     @cache
+    def _samples(self, meta) -> List[SampleId]:
+        return self.pool.api.get_samples(self.id)
+
+    @property
     def samples(self, meta) -> Iterable[Sample]:
-        data, meta = self.pool.api.get_samples(self.id)
-        return [self.pool.sample(id) for id in data], meta
+        return [self.pool.sample(id) for id in self._samples]
 
     @property
     def samples_consumed(self) -> Iterable[Sample]:
@@ -244,10 +248,13 @@ class InstanceProxy(Instance):
     def samples_unconsumed(self) -> Iterable[Sample]:
         return list(filter(_unconsumed_filter, self.samples))
 
+    @property
     @cache
-    def _get_descriptors(self, meta) -> Iterable[Descriptor]:
-        data, meta = self.pool.api.get_descriptors(self.id)
-        return [DescriptorProxy(self.pool, d) for d in data], meta
+    def __get_descriptors(self, meta) -> List[DescriptorId]:
+        return self.pool.api.get_descriptors(self.id)
+
+    def _get_descriptors(self) -> Iterable[Descriptor]:
+        return [DescriptorProxy(self.pool, d) for d in self.__get_descriptors]
 
     def _new_descriptor(self, key: str, raw: Any) -> None:
         descriptorId, _ = self.pool.api.new_descriptor(self.id)
