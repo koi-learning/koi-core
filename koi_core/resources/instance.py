@@ -16,10 +16,7 @@
 from koi_core.caching import cache
 from koi_core.resources.model import Model
 from koi_core.resources.ids import InstanceId, ModelId, SampleId, DescriptorId
-from koi_core.resources.sample_instance_util import (
-    InstanceDescriptorAccessor,
-    SampleAccessor,
-)
+from koi_core.resources.sample_instance_util import InstanceDescriptorAccessor
 from typing import Any, Dict, Iterable, List, TYPE_CHECKING, Union
 from uuid import uuid4
 from koi_core.resources.sample import Sample
