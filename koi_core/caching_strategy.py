@@ -35,12 +35,35 @@ class ExpireCachingStrategy:
 
     def shouldPersist(self, proxy, key, meta):
         t = type(proxy).__name__
+
         if t == "ModelProxy":
-            if key == "code":
-                return False
-            return True
+            if key in [
+                "_basic_fields",
+                "_code",
+                "request_plugin",
+                "visual_plugin",
+                "_instance_ids",
+            ]:
+                return True
+            return False
         if t == "InstanceProxy":
-            return True
+            if key in ["_basic_fields", "training_data", "inference_data", "_samples"]:
+                return True
+            return False
+        if t == "DescriptorProxy":
+            if key in ["_basic_fields", "raw"]:
+                return True
+            return False
+        if t == "SampleProxy":
+            if key in ["_basic_fields", "__get_data", "__get_labels"]:
+                return True
+            return False
+        if t in ["SampleDatumProxy", "SampleLabelProxy"]:
+            if key in ["_basic_fields", "raw"]:
+                return True
+            return False
+        if t in ["LocalOnlyObjectPool", "APIObjectPool"]:
+            return False
         return False
 
 

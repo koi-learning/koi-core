@@ -235,10 +235,13 @@ class InstanceProxy(Instance):
         data, _ = self.pool.api.get_samples(self.id, filter_include, filter_exclude)
         return [self.pool.sample(id) for id in data]
 
+    @property
     @cache
-    def _get_descriptors(self, meta) -> Iterable[Descriptor]:
-        data, meta = self.pool.api.get_descriptors(self.id)
-        return [DescriptorProxy(self.pool, d) for d in data], meta
+    def __get_descriptors(self, meta) -> List[DescriptorId]:
+        return self.pool.api.get_descriptors(self.id)
+
+    def _get_descriptors(self) -> Iterable[Descriptor]:
+        return [DescriptorProxy(self.pool, d) for d in self.__get_descriptors]
 
     def _new_descriptor(self, key: str, raw: Any) -> None:
         descriptorId, _ = self.pool.api.new_descriptor(self.id)
