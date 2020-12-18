@@ -28,6 +28,11 @@ class ExpireCachingStrategy:
     def isValid(self, proxy, key, meta):
         now = datetime.utcnow()
 
+        # Cache all PoolObjects
+        t = type(proxy).__name__
+        if t in ["LocalOnlyObjectPool", "APIObjectPool"]:
+            return True
+
         if meta is None or now >= meta.expires:
             return False
         else:
