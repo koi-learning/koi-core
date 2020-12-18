@@ -47,6 +47,9 @@ class Sample:
     id: SampleId
     finalized: bool
     instance: "Instance"
+    data: SampleDataAccessor
+    labels: SampleLabelsAccessor
+    tags: SampleTagAccessor
 
     def request_label(self) -> None:
         ...
