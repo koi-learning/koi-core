@@ -124,13 +124,13 @@ class LocalInstance(Instance):
     _sample_ids: List[SampleId] = list()
 
     def get_samples(self, filter_include: list = None, filter_exclude: list = None):
-        temp = [self.pool.sample(s) for s in self._sample_ids]
+        all_samples = [self.pool.sample(s) for s in self._sample_ids]
 
         return [
-            s
-            for s in temp
-            if True in [a in filter_include for a in s.tags]
-            and True not in [a in filter_exclude for a in s.tags]
+            sample
+            for sample in all_samples
+            if any((tag in filter_include for tag in sample.tags))
+            and not any((tag in filter_exclude for tag in sample.tags))
         ]
 
     def __init__(
