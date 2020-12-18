@@ -149,7 +149,7 @@ class ModelProxy(Model):
 
     @visual_plugin.setter
     def visual_plugin(self, value: Any) -> None:
-        self.pool.api.set_model_request_plugin(self.id, value)
+        self.pool.api.set_model_visual_plugin(self.id, value)
 
     @property
     @cache
