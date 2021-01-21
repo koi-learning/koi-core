@@ -101,10 +101,10 @@ class LocalSample(Sample):
         self._labels.append(datum)
 
     def _add_tag(self, tag) -> None:
-        self._tags.add(tag)
+        self._tags.append(tag)
 
     def _remove_tag(self, tag) -> None:
-        self._tags.discard(tag)
+        self._tags.pop(tag)
 
     def request_label(self) -> None:
         print("Label Request")

@@ -126,12 +126,29 @@ class LocalInstance(Instance):
     def get_samples(self, filter_include: list = None, filter_exclude: list = None):
         all_samples = [self.pool.sample(s) for s in self._sample_ids]
 
-        return [
-            sample
-            for sample in all_samples
-            if any((tag in filter_include for tag in sample.tags))
-            and not any((tag in filter_exclude for tag in sample.tags))
-        ]
+        if filter_include is None and filter_exclude is None:
+            return all_samples
+        else:
+            if filter_include is None:
+                return [
+                    sample
+                    for sample in all_samples
+                    if not any((tag in filter_exclude for tag in sample._tags))
+                ]
+            
+            if filter_exclude is None:
+                return [
+                    sample
+                    for sample in all_samples
+                    if any((tag in filter_include for tag in sample._tags))
+                ]
+            
+            return [
+                sample
+                for sample in all_samples
+                if any((tag in filter_include for tag in sample._tags))
+                and not any((tag in filter_exclude for tag in sample._tags))
+            ]
 
     def __init__(
         self, pool: "LocalOnlyObjectPool", id: Union[InstanceId, ModelId]
