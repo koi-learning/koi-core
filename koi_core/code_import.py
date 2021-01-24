@@ -28,7 +28,7 @@ if TYPE_CHECKING:
 class KoiCodeLoader(Loader, MetaPathFinder):
     _modules = dict()
     _prefix = 'user_code'
-    _param_module = _prefix + '.__params__'
+    _param_module = _prefix + '.__param__'
 
     def __init__(self, code: 'Code', param_dict):
         self._code = code
@@ -41,7 +41,7 @@ class KoiCodeLoader(Loader, MetaPathFinder):
         else:
             code = self._get_module_code(module.__spec__.origin)
             # module.__path__=self._prefix
-            module.__params__ = import_module(self._param_module)
+            module.__param__ = import_module(self._param_module)
             exec(code, module.__dict__)
 
     def find_spec(self, fullname, paths=None, target=None):
