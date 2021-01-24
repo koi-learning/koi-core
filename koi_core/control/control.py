@@ -43,9 +43,10 @@ def train(instance: Instance, batch_iterable=None, dev=False):
         _runable_instance.train(batch_iterable)
 
 
-def infer(instance: Instance, data, dev=False) -> List[Any]:
+def infer(instance: Instance, data, dev=False, model=None) -> List[Any]:
     if dev:
-        model = instance.load_code()
+        if model is None:
+            model = instance.load_code()
         return actions.infer(model, instance, data)
     else:
         _set_instance(instance)
