@@ -233,7 +233,7 @@ class SampleProxy(Sample):
     def __get_data(self, meta) -> List[SampleDatumId]:
         return self.pool.api.get_sample_data(self.id)
 
-    def _get_data(self, meta) -> Iterable[SampleDatum]:
+    def _get_data(self) -> Iterable[SampleDatum]:
         return [SampleDatumProxy(self.pool, d) for d in self.__get_data]
 
     def _new_datum(self, key: str, raw: Any) -> None:
@@ -247,7 +247,6 @@ class SampleProxy(Sample):
     def __get_labels(self, meta) -> List[SampleLabel]:
         return self.pool.api.get_sample_labels(self.id)
 
-    @cache
     def _get_labels(self) -> Iterable[SampleLabel]:
         return [SampleLabelProxy(self.pool, d) for d in self.__get_labels]
 
