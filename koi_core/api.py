@@ -463,10 +463,20 @@ class API:
             params["inc_tags"] = filter_include
         if filter_exclude is not None:
             params["exc_tags"] = filter_exclude
-        data, meta = self._GET(
-            self._build_path(id) + "/sample",
-            parameter=params,
-        )
+        cont = True
+        data = []
+        meta = None
+        offset = 0
+        while cont:
+            params["page_offset"] = offset
+            data_part, meta = self._GET(
+                self._build_path(id) + "/sample",
+                parameter=params,
+            )
+            data = data + data_part
+            offset += len(data_part)
+            if len(data_part) == 0:
+                cont = False
         return (
             [SampleId(id=id, sample_uuid=UUID(d["sample_uuid"])) for d in data],
             meta,
