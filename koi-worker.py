@@ -178,10 +178,11 @@ if __name__ == "__main__":
                             "start to train instance %s/%s", model.name, instance.name
                         )
                         koi.control.train(instance, None, False)
-                    except:
-                        logging.error(
+                    except Exception:
+                        logging.exception(
                             "instance %s/%s had an exception", model.name, instance.name
                         )
+                        raise
 
         # break here if the user selected to run once
         if opt.once:
