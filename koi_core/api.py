@@ -366,7 +366,7 @@ class API:
     # endregion
 
     # region instance
-    def get_instances(self, id: ModelId, last_modified=None):
+    def get_instances(self, id: ModelId):
         data, meta = self._GET(self._build_path(id) + "/instance")
         return (
             [InstanceId(id=id, instance_uuid=UUID(d["instance_uuid"])) for d in data],
