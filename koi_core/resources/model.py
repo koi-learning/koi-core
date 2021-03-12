@@ -152,8 +152,8 @@ class ModelProxy(Model):
         self.pool.api.set_model_visual_plugin(self.id, value)
 
     @property
-    def _instance_ids(self, meta) -> List[InstanceId]:
-        return self.pool.api.get_instances(self.id, meta)
+    def _instance_ids(self) -> List[InstanceId]:
+        return self.pool.api.get_instances(self.id)
 
     @property
     def instances(self) -> Iterable["Instance"]:
