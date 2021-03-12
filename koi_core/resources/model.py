@@ -153,7 +153,8 @@ class ModelProxy(Model):
 
     @property
     def _instance_ids(self) -> List[InstanceId]:
-        return self.pool.api.get_instances(self.id)
+        instance_ids, _ = self.pool.api.get_instances(self.id)
+        return instance_ids
 
     @property
     def instances(self) -> Iterable["Instance"]:
