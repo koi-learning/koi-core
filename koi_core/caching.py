@@ -23,6 +23,16 @@ from typing import Any, Dict, Hashable, Tuple, TypeVar
 class CachingMeta:
     expires: datetime
     last_modified: datetime
+    etag: str
+
+    def __eq__(self, other):
+        if other is None:
+            return False
+
+        if self.etag is not None and other.etag is not None:
+            return self.etag == other.etag
+
+        return self.last_modified == other.last_modified
 
 
 CachingDict = Dict[str, Dict[Any, Tuple[Any, CachingMeta]]]
