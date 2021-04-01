@@ -72,6 +72,9 @@ def authenticated_head(request_func: T) -> T:
                 response.headers["Last-Modified"], "%a, %d %b %Y %H:%M:%S GMT"
             )
 
+        if meta is not None and "Etag" in response.headers:
+            meta.etag = response.headers["Etag"]
+
         return meta
 
     return func
@@ -103,6 +106,9 @@ def authenticated_json(request_func: T) -> T:
             meta.last_modified = datetime.strptime(
                 response.headers["Last-Modified"], "%a, %d %b %Y %H:%M:%S GMT"
             )
+
+        if meta is not None and "Etag" in response.headers:
+            meta.etag = response.headers["Etag"]
 
         return response.json(), meta
 
@@ -137,6 +143,9 @@ def authenticated_raw(request_func: T) -> T:
             meta.last_modified = datetime.strptime(
                 response.headers["Last-Modified"], "%a, %d %b %Y %H:%M:%S GMT"
             )
+
+        if meta is not None and "Etag" in response.headers:
+            meta.etag = response.headers["Etag"]
 
         return response.content, meta
 
@@ -313,7 +322,7 @@ class API:
             return _parse_model(self._GET(self._build_path(id)))
         else:
             new_meta = self._HEAD(self._build_path(id))
-            if new_meta.last_modified > meta.last_modified:
+            if new_meta != meta:
                 return _parse_model(self._GET(self._build_path(id)))
             else:
                 return None, new_meta
@@ -327,7 +336,7 @@ class API:
             return self._GET_raw(path)
         else:
             new_meta = self._HEAD(path)
-            if new_meta.last_modified > meta.last_modified:
+            if new_meta != meta:
                 return self._GET_raw(path)
             else:
                 return None, new_meta
@@ -341,7 +350,7 @@ class API:
             return self._GET_raw(path)
         else:
             new_meta = self._HEAD(path)
-            if new_meta.last_modified > meta.last_modified:
+            if new_meta != meta:
                 return self._GET_raw(path)
             else:
                 return None, new_meta
@@ -355,7 +364,7 @@ class API:
             return self._GET_raw(path)
         else:
             new_meta = self._HEAD(path)
-            if new_meta.last_modified > meta.last_modified:
+            if new_meta != meta:
                 return self._GET_raw(path)
             else:
                 return None, new_meta
@@ -386,7 +395,7 @@ class API:
             return _parse_instance(self._GET(path))
         else:
             new_meta = self._HEAD(path)
-            if new_meta.last_modified > meta.last_modified:
+            if new_meta != meta:
                 return _parse_instance(self._GET_raw(path))
             else:
                 return None, new_meta
@@ -400,7 +409,7 @@ class API:
             return self._GET_raw(path)
         else:
             new_meta = self._HEAD(path)
-            if new_meta.last_modified > meta.last_modified:
+            if new_meta != meta:
                 return self._GET_raw(path)
             else:
                 return None, new_meta
@@ -414,7 +423,7 @@ class API:
             return self._GET_raw(path)
         else:
             new_meta = self._HEAD(path)
-            if new_meta.last_modified > meta.last_modified:
+            if new_meta != meta:
                 return self._GET_raw(path)
             else:
                 return None, new_meta
@@ -495,7 +504,7 @@ class API:
             return _parse_sample(self._GET(path))
         else:
             new_meta = self._HEAD(path)
-            if new_meta.last_modified > meta.last_modified:
+            if new_meta != meta:
                 return _parse_sample(self._GET(path))
             else:
                 return None, new_meta
@@ -510,7 +519,7 @@ class API:
             return {obj["name"] for obj in json_resp}, new_meta
         else:
             new_meta = self._HEAD(path)
-            if new_meta.last_modified > meta.last_modified:
+            if new_meta != meta:
                 json_resp, new_meta = self._GET(path)
                 return {obj["name"] for obj in json_resp}, new_meta
             else:
@@ -559,7 +568,7 @@ class API:
             return _parse_sample_datum(self._GET(path))
         else:
             new_meta = self._HEAD(path)
-            if new_meta.last_modified > meta.last_modified:
+            if new_meta != meta:
                 return _parse_sample_datum(self._GET(path))
             else:
                 return None, new_meta
@@ -573,7 +582,7 @@ class API:
             return self._GET_raw(path)
         else:
             new_meta = self._HEAD(path)
-            if new_meta.last_modified > meta.last_modified:
+            if new_meta != meta:
                 return self._GET_raw(path)
             else:
                 return None, new_meta
@@ -607,7 +616,7 @@ class API:
             return _parse_sample_datum(self._GET(path))
         else:
             new_meta = self._HEAD(path)
-            if new_meta.last_modified > meta.last_modified:
+            if new_meta != meta:
                 return _parse_sample_datum(self._GET(path))
             else:
                 return None, new_meta
@@ -621,7 +630,7 @@ class API:
             return self._GET_raw(path)
         else:
             new_meta = self._HEAD(path)
-            if new_meta.last_modified > meta.last_modified:
+            if new_meta != meta:
                 return self._GET_raw(path)
             else:
                 return None, new_meta
