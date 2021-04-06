@@ -396,7 +396,7 @@ class API:
         else:
             new_meta = self._HEAD(path)
             if new_meta != meta:
-                return _parse_instance(self._GET_raw(path))
+                return _parse_instance(self._GET(path))
             else:
                 return None, new_meta
 
