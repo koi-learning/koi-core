@@ -452,13 +452,29 @@ class API:
         )
 
     def get_descriptor(self, id: DescriptorId, meta: CachingMeta = None):
-        return _parse_instance_descriptor(self._GET(self._build_path(id)))
+        path = self._build_path(id)
+        if meta is None:
+            return _parse_instance_descriptor(self._GET(path))
+        else:
+            new_meta = self._HEAD(path)
+            if new_meta != meta:
+                return _parse_instance_descriptor(self._GET(path))
+            else:
+                return None, new_meta
 
     def update_descriptor(self, id: DescriptorId, update: DescriptorBasicFields):
         self._PUT(self._build_path(id), data=_encode_instance_descriptor(update))
 
     def get_descriptor_data(self, id: DescriptorId, meta: CachingMeta = None):
-        return self._GET_raw(self._build_path(id) + "/file")
+        path = self._build_path(id) + "/file"
+        if meta is None:
+            return self._GET_raw(path)
+        else:
+            new_meta = self._HEAD(path)
+            if new_meta != meta:
+                return self._GET_raw(path)
+            else:
+                return None, new_meta
 
     def set_descriptor_data(self, id: DescriptorId, data: bytes):
         self._POST_raw(self._build_path(id) + "/file", data=data)
