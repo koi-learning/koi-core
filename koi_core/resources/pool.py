@@ -70,7 +70,7 @@ class APIObjectPool:
         self.api = api
 
     def get_all_models(self) -> Iterable[Model]:
-        models, _ = self.api.get_models()
+        models, _ = self.api.models.get_models()
         return (self.model(id) for id in models)
 
     @indexedCache
