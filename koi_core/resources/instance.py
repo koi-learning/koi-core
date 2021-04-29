@@ -135,14 +135,14 @@ class LocalInstance(Instance):
                     for sample in all_samples
                     if not any((tag in filter_exclude for tag in sample._tags))
                 ]
-            
+
             if filter_exclude is None:
                 return [
                     sample
                     for sample in all_samples
                     if any((tag in filter_include for tag in sample._tags))
                 ]
-            
+
             return [
                 sample
                 for sample in all_samples
