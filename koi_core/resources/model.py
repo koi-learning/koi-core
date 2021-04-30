@@ -160,6 +160,11 @@ class ModelProxy(Model):
     def instances(self) -> Iterable["Instance"]:
         return (self.pool.instance(i) for i in self._instance_ids)
 
+    @property
+    @cache
+    def parameters(self, meta) -> Iterable[dict]:
+        return self.pool.api.models.get_model_parameters(self.id, meta)
+
     def __init__(self, pool: "APIObjectPool", id: ModelId = None) -> None:
         self.pool = pool
         if id is None:
