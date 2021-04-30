@@ -147,6 +147,8 @@ def authenticated_raw(request_func: T) -> T:
 
 
 def _parse(response, cls, mapping):
+    if response[0] is None:
+        return response
     object = cls()
     for key in cls.__annotations__:
         setattr(object, key, response[0][mapping[key]])
@@ -204,6 +206,26 @@ class BaseAPI:
     @authenticated_json
     def _POST_raw(self, path: str, auth: AuthBase, data: bytes = None):
         return self._session.post(self._base_url + path, data=data, auth=auth)
+
+    def GET(self, path: str, meta: CachingMeta = None):
+        if meta is None:
+            return self._GET(path)
+        else:
+            new_meta = self._HEAD(path)
+            if new_meta != meta:
+                return self._GET(path)
+            else:
+                return None, new_meta
+
+    def GET_RAW(self, path: str, meta: CachingMeta = None) -> Tuple[bytes, CachingMeta]:
+        if meta is None:
+            return self._GET_raw(path)
+        else:
+            new_meta = self._HEAD(path)
+            if new_meta != meta:
+                return self._GET_raw(path)
+            else:
+                return None, new_meta
 
     def _build_path(
         self,
