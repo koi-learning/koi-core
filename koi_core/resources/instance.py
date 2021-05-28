@@ -275,3 +275,6 @@ class InstanceProxy(Instance):
     def new_sample(self):
         sample = self.pool.new_sample(self.id)
         return sample
+
+    def merge(self, instances: Iterable):
+        self.pool.api.instances.merge_instances(self.id, instances)
