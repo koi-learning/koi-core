@@ -118,11 +118,11 @@ class SampleDatumProxy(SampleDatum):
     @property
     @cache
     def _basic_fields(self, meta) -> SampleDatumBasicFields:
-        return self.pool.api.get_sample_datum(self.id, meta)
+        return self.pool.api.samples.get_sample_datum(self.id, meta)
 
     @_basic_fields.setter
     def _basic_fields(self, value: SampleDatumBasicFields) -> None:
-        return self.pool.api.update_sample_datum(self.id, value)
+        return self.pool.api.samples.update_sample_datum(self.id, value)
 
     def __getattr__(self, name: str) -> Any:
         if name in SampleDatumBasicFields.__annotations__:
@@ -141,11 +141,11 @@ class SampleDatumProxy(SampleDatum):
     @property
     @cache
     def raw(self, meta) -> bytes:
-        return self.pool.api.get_sample_datum_file(self.id, meta)
+        return self.pool.api.samples.get_sample_datum_file(self.id, meta)
 
     @raw.setter
     def raw(self, value: bytes):
-        self.pool.api.set_sample_datum_file(self.id, value)
+        self.pool.api.samples.set_sample_datum_file(self.id, value)
 
     def __init__(self, pool: "APIObjectPool", id: SampleDatumId) -> None:
         self.pool = pool
@@ -156,11 +156,11 @@ class SampleLabelProxy(SampleLabel):
     @property
     @cache
     def _basic_fields(self, meta) -> SampleDatumBasicFields:
-        return self.pool.api.get_sample_label(self.id, meta)
+        return self.pool.api.samples.get_sample_label(self.id, meta)
 
     @_basic_fields.setter
     def _basic_fields(self, value: SampleDatumBasicFields) -> None:
-        return self.pool.api.update_sample_label(self.id, value)
+        return self.pool.api.samples.update_sample_label(self.id, value)
 
     def __getattr__(self, name: str) -> Any:
         if name in SampleDatumBasicFields.__annotations__:
@@ -179,11 +179,11 @@ class SampleLabelProxy(SampleLabel):
     @property
     @cache
     def raw(self, meta) -> bytes:
-        return self.pool.api.get_sample_label_file(self.id, meta)
+        return self.pool.api.samples.get_sample_label_file(self.id, meta)
 
     @raw.setter
     def raw(self, value: bytes):
-        self.pool.api.set_sample_label_file(self.id, value)
+        self.pool.api.samples.set_sample_label_file(self.id, value)
 
     def __init__(self, pool: "APIObjectPool", id: SampleDatumId) -> None:
         self.pool = pool
@@ -194,16 +194,16 @@ class SampleProxy(Sample):
     @property
     @cache
     def _basic_fields(self, meta) -> SampleBasicFields:
-        return self.pool.api.get_sample(self.id, meta)
+        return self.pool.api.samples.get_sample(self.id, meta)
 
     @_basic_fields.setter
     def _basic_fields(self, value: SampleBasicFields) -> None:
-        return self.pool.api.update_sample(self.id, value)
+        return self.pool.api.samples.update_sample(self.id, value)
 
     @property
     @cache
     def _tags(self, meta):
-        return self.pool.api.get_tags(self.id, meta)
+        return self.pool.api.samples.get_tags(self.id, meta)
 
     def __getattr__(self, name: str) -> Any:
         if name in SampleBasicFields.__annotations__:
@@ -222,7 +222,7 @@ class SampleProxy(Sample):
     def __init__(self, pool: "APIObjectPool", id: Union[SampleId, InstanceId]) -> None:
         self.pool = pool
         if not isinstance(id, SampleId):
-            id, _ = pool.api.new_sample(id)
+            id, _ = pool.api.samples.new_sample(id)
         self.id = id
         self.data = SampleDataAccessor(self)
         self.labels = SampleLabelsAccessor(self)
@@ -231,13 +231,13 @@ class SampleProxy(Sample):
     @property
     @cache
     def __get_data(self, meta) -> List[SampleDatumId]:
-        return self.pool.api.get_sample_data(self.id)
+        return self.pool.api.samples.get_sample_data(self.id)
 
     def _get_data(self) -> Iterable[SampleDatum]:
         return [SampleDatumProxy(self.pool, d) for d in self.__get_data]
 
     def _new_datum(self, key: str, raw: Any) -> None:
-        datumId, _ = self.pool.api.new_sample_datum(self.id)
+        datumId, _ = self.pool.api.samples.new_sample_datum(self.id)
         datum = SampleDatumProxy(self.pool, datumId)
         datum.key = key
         datum.raw = raw
@@ -245,22 +245,22 @@ class SampleProxy(Sample):
     @property
     @cache
     def __get_labels(self, meta) -> List[SampleLabel]:
-        return self.pool.api.get_sample_labels(self.id)
+        return self.pool.api.samples.get_sample_labels(self.id)
 
     def _get_labels(self) -> Iterable[SampleLabel]:
         return [SampleLabelProxy(self.pool, d) for d in self.__get_labels]
 
     def _new_label(self, key: str, raw: Any) -> None:
-        labelId, _ = self.pool.api.new_sample_label(self.id)
+        labelId, _ = self.pool.api.samples.new_sample_label(self.id)
         label = SampleLabelProxy(self.pool, labelId)
         label.key = key
         label.raw = raw
 
     def _add_tag(self, tag) -> None:
-        self.pool.api.add_tag(self.id, tag)
+        self.pool.api.samples.add_tag(self.id, tag)
 
     def _remove_tag(self, tag) -> None:
-        self.pool.api.remove_tag(self.id, tag)
+        self.pool.api.samples.remove_tag(self.id, tag)
 
     def request_label(self) -> None:
-        self.pool.api.request_label(self.id)
+        self.pool.api.samples.request_label(self.id)

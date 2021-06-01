@@ -67,11 +67,11 @@ class DescriptorProxy(Descriptor):
     @property
     @cache
     def _basic_fields(self, meta) -> DescriptorBasicFields:
-        return self.pool.api.get_descriptor(self.id, meta)
+        return self.pool.api.instances.get_descriptor(self.id, meta)
 
     @_basic_fields.setter
     def _basic_fields(self, value: DescriptorBasicFields) -> None:
-        return self.pool.api.update_descriptor(self.id, value)
+        return self.pool.api.instances.update_descriptor(self.id, value)
 
     def __getattr__(self, name: str) -> Any:
         if name in DescriptorBasicFields.__annotations__:
@@ -90,11 +90,11 @@ class DescriptorProxy(Descriptor):
     @property
     @cache
     def raw(self, meta) -> bytes:
-        return self.pool.api.get_descriptor_data(self.id, meta)
+        return self.pool.api.instances.get_descriptor_data(self.id, meta)
 
     @raw.setter
     def raw(self, value):
-        self.pool.api.set_descriptor_data(self.id, value)
+        self.pool.api.instances.set_descriptor_data(self.id, value)
 
 
 class Instance:
@@ -135,14 +135,14 @@ class LocalInstance(Instance):
                     for sample in all_samples
                     if not any((tag in filter_exclude for tag in sample._tags))
                 ]
-            
+
             if filter_exclude is None:
                 return [
                     sample
                     for sample in all_samples
                     if any((tag in filter_include for tag in sample._tags))
                 ]
-            
+
             return [
                 sample
                 for sample in all_samples
@@ -193,11 +193,11 @@ class InstanceProxy(Instance):
     @property
     @cache
     def _basic_fields(self, meta) -> InstanceBasicFields:
-        return self.pool.api.get_instance(self.id, meta)
+        return self.pool.api.instances.get_instance(self.id, meta)
 
     @_basic_fields.setter
     def _basic_fields(self, value: InstanceBasicFields) -> None:
-        return self.pool.api.update_instance(self.id, value)
+        return self.pool.api.instances.update_instance(self.id, value)
 
     def __getattr__(self, name: str) -> Any:
         if name in InstanceBasicFields.__annotations__:
@@ -219,7 +219,7 @@ class InstanceProxy(Instance):
         t_dat = None
         new_meta = None
         try:
-            t_dat, new_meta = self.pool.api.get_instance_training_data(self.id, meta)
+            t_dat, new_meta = self.pool.api.instances.get_instance_training_data(self.id, meta)
         except LookupError:
             t_dat = None
             new_meta = None
@@ -227,7 +227,7 @@ class InstanceProxy(Instance):
 
     @training_data.setter
     def training_data(self, value):
-        self.pool.api.set_instance_training_data(self.id, value)
+        self.pool.api.instances.set_instance_training_data(self.id, value)
 
     @property
     @cache
@@ -235,7 +235,7 @@ class InstanceProxy(Instance):
         i_dat = None
         new_meta = None
         try:
-            i_dat, new_meta = self.pool.api.get_instance_inference_data(self.id, meta)
+            i_dat, new_meta = self.pool.api.instances.get_instance_inference_data(self.id, meta)
         except LookupError:
             i_dat = None
             new_meta = None
@@ -243,22 +243,22 @@ class InstanceProxy(Instance):
 
     @inference_data.setter
     def inference_data(self, value):
-        self.pool.api.set_instance_inference_data(self.id, value)
+        self.pool.api.instances.set_instance_inference_data(self.id, value)
 
     def get_samples(self, filter_include: list = None, filter_exclude: list = None):
-        data, _ = self.pool.api.get_samples(self.id, filter_include, filter_exclude)
+        data, _ = self.pool.api.samples.get_samples(self.id, filter_include, filter_exclude)
         return [self.pool.sample(id) for id in data]
 
     @property
     @cache
     def __get_descriptors(self, meta) -> List[DescriptorId]:
-        return self.pool.api.get_descriptors(self.id)
+        return self.pool.api.instances.get_descriptors(self.id)
 
     def _get_descriptors(self) -> Iterable[Descriptor]:
         return [DescriptorProxy(self.pool, d) for d in self.__get_descriptors]
 
     def _new_descriptor(self, key: str, raw: Any) -> None:
-        descriptorId, _ = self.pool.api.new_descriptor(self.id)
+        descriptorId, _ = self.pool.api.instances.new_descriptor(self.id)
         descriptor = DescriptorProxy(self.pool, descriptorId)
         descriptor.key = key
         descriptor.raw = raw
@@ -266,7 +266,7 @@ class InstanceProxy(Instance):
     def __init__(self, pool: "APIObjectPool", id: Union[InstanceId, ModelId]) -> None:
         self.pool = pool
         if not isinstance(id, InstanceId):
-            id, _ = pool.api.new_instance(id)
+            id, _ = pool.api.instances.new_instance(id)
         self.id = id
 
         self.descriptors = InstanceDescriptorAccessor(self)
@@ -275,3 +275,6 @@ class InstanceProxy(Instance):
     def new_sample(self):
         sample = self.pool.new_sample(self.id)
         return sample
+
+    def merge(self, instances: Iterable):
+        self.pool.api.instances.merge_instances(self.id, instances)
