@@ -100,15 +100,13 @@ class InstanceParameterAccessor:
         self._model_params = {}
         self._update_allowed_keys()
 
-        self._params = {}
-        self._update_params()
-
     def _update_allowed_keys(self):
-        self._model_params = self.instance._get_available_parameters()
-        self._allowed_keys = [x["name"] for x in self._params]
+        self._model_params = self.instance._get_parameter_values()
+        self._allowed_keys = [x["name"] for x in self._model_params]
 
-    def _update_params(self):
-        pass
+    def _update_param(self, key: str, value):
+        parameter = {"param_uuid": "", "value": None}
+        self.instance._set_parameter_value(parameter)
 
     def keys(self):
         return self._allowed_keys
@@ -117,17 +115,22 @@ class InstanceParameterAccessor:
         if key not in self._allowed_keys:
             raise KeyError
 
-        self._update_params()
-        for param in self._params:
-            if param["name"] == key:
-                return None
-        return None
+        self._update_allowed_keys()
 
-    def __setitem__(self, key: str):
+        param = next(filter(lambda x: x["name"] == key, self._model_params))
+        return param["value"]
+
+    def __setitem__(self, key: str, value):
         if key not in self._keys:
             raise KeyError
 
-        self._update_params()
+        param = next(filter(lambda x: x["name"] == key, self._model_params))
+
+        if str(type(value)) != param["type"]:
+            raise TypeError
+
+        param["value"] = value
+        self._update_param(param)
 
 
 class InstanceDescriptorAccessor:
