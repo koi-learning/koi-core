@@ -24,4 +24,5 @@ def test_instance_parameter(api_mock):
 
     x = dict(inst.parameter)
 
-    print(x)
+    x["param1"] = 11
+    # print(x)

@@ -272,7 +272,7 @@ class InstanceProxy(Instance):
         return self.pool.api.instances.get_parameters(self.id, meta)
 
     def _set_parameter_value(self, parameter):
-        self.pool.api.instances.set_parameter(self.id, parameter)
+        self.pool.api.instances.update_parameter(self.id, parameter)
 
     def __init__(self, pool: "APIObjectPool", id: Union[InstanceId, ModelId]) -> None:
         self.pool = pool

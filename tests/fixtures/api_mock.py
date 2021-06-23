@@ -70,6 +70,24 @@ data_models = [
                 "instance_description": "Instance Description 0",
                 "instance_name": "Instance 0",
                 "instance_uuid": UUID("00000000-0002-1000-8000-000000000000"),
+                "parameter": [
+                    {
+                        "param_uuid": UUID("00000000-1001-1000-8000-000000000000"),
+                        "name": "param1",
+                        "description": "description of param1",
+                        "constraint": "",
+                        "type": "int",
+                        "value": 1,
+                    },
+                    {
+                        "param_uuid": UUID("00000000-1002-1000-8000-000000000000"),
+                        "name": "param2",
+                        "description": "description of param2",
+                        "constraint": "",
+                        "type": "float",
+                        "value": 10.0,
+                    },
+                ],
             },
             {
                 "could_train": True,
@@ -79,6 +97,24 @@ data_models = [
                 "instance_description": "Instance Description 1",
                 "instance_name": "Instance 1",
                 "instance_uuid": UUID("00000000-0002-1000-8000-000000000001"),
+                "parameter": [
+                    {
+                        "param_uuid": UUID("00000000-1001-1000-8000-000000000000"),
+                        "name": "param1",
+                        "description": "description of param1",
+                        "constraint": "",
+                        "type": "int",
+                        "value": 10
+                    },
+                    {
+                        "param_uuid": UUID("00000000-1002-1000-8000-000000000000"),
+                        "name": "param2",
+                        "description": "description of param2",
+                        "constraint": "",
+                        "type": "float",
+                        "value": 0.5,
+                    },
+                ],
             },
         ],
     },
@@ -125,8 +161,12 @@ def api_mock(requests_mock, testing_model):
     requests_mock.register_uri(
         "GET", re.compile(r"testing://base/api/model/(\d*)/code"), content=model_code
     )
+
     requests_mock.register_uri(
         "GET", re.compile(r"testing://base/api/model/(\d*)/instance"), json=instances
+    )
+    requests_mock.register_uri(
+        "GET", re.compile(r"testing://base/api/model/(\d*)/instance/(\d*)/parameter"), json=instance_parameter
     )
     return requests_mock
 
@@ -199,3 +239,19 @@ def instances(request, context):
         (model for model in data_models if model["model_uuid"] == model_id), None
     )
     return [{key: instance[key] for key in keys} for instance in model["instances"]]
+
+
+@cache_controlled
+def instance_parameter(request, context):
+    match = re.search(r"testing://base/api/model/(\d*)/instance/(\d*)/parameter", str(request))
+    model_id = UUID(match[1])
+    instance_id = UUID(match[2])
+
+    model = next(
+        (model for model in data_models if model["model_uuid"] == model_id), None
+    )
+
+    instance = next(
+        (instance for instance in model["instances"] if instance["instance_uuid"] == instance_id), None
+    )
+    return instance["parameter"]
