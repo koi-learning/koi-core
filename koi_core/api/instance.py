@@ -136,3 +136,7 @@ class APIInstances(BaseAPI):
     def get_parameters(self, id: InstanceId, meta: CachingMeta = None):
         path = self._build_path(id) + "/parameter"
         return self.GET(path, meta)
+
+    def update_parameter(self, id: InstanceId, parameter):
+        path = self._build_path(id) + "/parameter"
+        self._POST(path, parameter)
