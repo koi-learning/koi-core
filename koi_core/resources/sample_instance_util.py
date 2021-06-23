@@ -93,6 +93,43 @@ class SampleLabelsAccessor:
         return accessor
 
 
+class InstanceParameterAccessor:
+    def __init__(self, instance: 'Instance') -> None:
+        self.instance = instance
+        self._allowed_keys = []
+        self._model_params = {}
+        self._update_allowed_keys()
+
+        self._params = {}
+        self._update_params()
+
+    def _update_allowed_keys(self):
+        self._model_params = self.instance._get_available_parameters()
+        self._allowed_keys = [x["name"] for x in self._params]
+
+    def _update_params(self):
+        pass
+
+    def keys(self):
+        return self._allowed_keys
+
+    def __getitem__(self, key: str):
+        if key not in self._allowed_keys:
+            raise KeyError
+
+        self._update_params()
+        for param in self._params:
+            if param["name"] == key:
+                return None
+        return None
+
+    def __setitem__(self, key: str):
+        if key not in self._keys:
+            raise KeyError
+
+        self._update_params()
+
+
 class InstanceDescriptorAccessor:
     def __init__(self, instance: 'Instance') -> None:
         self.instance = instance

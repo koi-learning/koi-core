@@ -80,28 +80,14 @@ class APIInstances(BaseAPI):
 
     def get_instance_inference_data(self, id: InstanceId, meta: CachingMeta = None):
         path = self._build_path(id) + "/inference"
-        if meta is None:
-            return self._GET_raw(path)
-        else:
-            new_meta = self._HEAD(path)
-            if new_meta != meta:
-                return self._GET_raw(path)
-            else:
-                return None, new_meta
+        return self.GET_RAW(path, meta)
 
     def set_instance_inference_data(self, id: InstanceId, data: bytes):
         self._POST_raw(self._build_path(id) + "/inference", data=data)
 
     def get_instance_training_data(self, id: InstanceId, meta: CachingMeta):
         path = self._build_path(id) + "/training"
-        if meta is None:
-            return self._GET_raw(path)
-        else:
-            new_meta = self._HEAD(path)
-            if new_meta != meta:
-                return self._GET_raw(path)
-            else:
-                return None, new_meta
+        return self.GET_RAW(path, meta)
 
     def set_instance_training_data(self, id: InstanceId, data: bytes):
         self._POST_raw(self._build_path(id) + "/training", data=data)
@@ -142,14 +128,11 @@ class APIInstances(BaseAPI):
 
     def get_descriptor_data(self, id: DescriptorId, meta: CachingMeta = None):
         path = self._build_path(id) + "/file"
-        if meta is None:
-            return self._GET_raw(path)
-        else:
-            new_meta = self._HEAD(path)
-            if new_meta != meta:
-                return self._GET_raw(path)
-            else:
-                return None, new_meta
+        return self.GET_RAW(path, meta)
 
     def set_descriptor_data(self, id: DescriptorId, data: bytes):
         self._POST_raw(self._build_path(id) + "/file", data=data)
+
+    def get_parameters(self, id: InstanceId, meta: CachingMeta = None):
+        path = self._build_path(id) + "/parameter"
+        return self.GET(path, meta)

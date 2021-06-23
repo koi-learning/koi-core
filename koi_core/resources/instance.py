@@ -16,7 +16,7 @@
 from koi_core.caching import cache
 from koi_core.resources.model import Model
 from koi_core.resources.ids import InstanceId, ModelId, SampleId, DescriptorId
-from koi_core.resources.sample_instance_util import InstanceDescriptorAccessor
+from koi_core.resources.sample_instance_util import InstanceDescriptorAccessor, InstanceParameterAccessor
 from typing import Any, Dict, Iterable, List, TYPE_CHECKING, Union
 from uuid import uuid4
 from koi_core.resources.sample import Sample
@@ -263,6 +263,17 @@ class InstanceProxy(Instance):
         descriptor.key = key
         descriptor.raw = raw
 
+    @cache
+    def _get_available_parameters(self, meta):
+        return self.pool.api.models.get_model_parameters(ModelId(self.id.model_uuid), meta)
+
+    @cache
+    def _get_parameter_values(self, meta):
+        return self.pool.api.instances.get_parameters(self.id, meta)
+
+    def _set_parameter_value(self, parameter):
+        self.pool.api.instances.set_parameter(self.id, parameter)
+
     def __init__(self, pool: "APIObjectPool", id: Union[InstanceId, ModelId]) -> None:
         self.pool = pool
         if not isinstance(id, InstanceId):
@@ -270,7 +281,7 @@ class InstanceProxy(Instance):
         self.id = id
 
         self.descriptors = InstanceDescriptorAccessor(self)
-        self.parameter = dict()  # TODO Remove
+        self.parameter = InstanceParameterAccessor(self)
 
     def new_sample(self):
         sample = self.pool.new_sample(self.id)

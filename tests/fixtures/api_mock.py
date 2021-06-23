@@ -45,6 +45,22 @@ data_models = [
         "model_name": "Model 0",
         "model_uuid": UUID("00000000-0001-1000-8000-000000000000"),
         "code": "testing_model",
+        "parameter": [
+            {
+                "param_uuid": UUID("00000000-1001-1000-8000-000000000000"),
+                "name": "param1",
+                "description": "description of param1",
+                "constraint": "",
+                "type": "int",
+            },
+            {
+                "param_uuid": UUID("00000000-1002-1000-8000-000000000000"),
+                "name": "param2",
+                "description": "description of param2",
+                "constraint": "",
+                "type": "int",
+            },
+        ],
         "instances": [
             {
                 "could_train": False,
@@ -74,6 +90,7 @@ data_models = [
         "model_description": "Description 1",
         "model_name": "Model 1",
         "model_uuid": UUID("00000000-0001-1000-8000-000000000001"),
+        "parameter": [],
         "instances": [],
     },
 ]
@@ -103,6 +120,8 @@ def api_mock(requests_mock, testing_model):
 
     requests_mock.register_uri("POST", "testing://base/api/login", json=login)
     requests_mock.register_uri("GET", "testing://base/api/model", json=models)
+    requests_mock.register_uri("GET", re.compile(r"testing://base/api/model/(\d*)/parameter"), json=model_parameter)
+
     requests_mock.register_uri(
         "GET", re.compile(r"testing://base/api/model/(\d*)/code"), content=model_code
     )
@@ -146,6 +165,20 @@ def model_code(request, context):
         (model for model in data_models if model["model_uuid"] == model_id), None
     )
     return data_code[model["code"]]
+
+
+@cache_controlled
+def model_parameter(request, context):
+    match = re.search(r"testing://base/api/model/(\d*)/parameter", str(request))
+    model_id = UUID(match[1])
+
+    model = next(
+        (model for model in data_models if model["model_uuid"] == model_id), None
+    )
+    if model is not None:
+        return model["parameter"]
+    else:
+        return []
 
 
 @cache_controlled
