@@ -13,6 +13,7 @@
 # GNU Lesser General Public License is distributed along with this
 # software and can be found at http://www.gnu.org/licenses/lgpl.html
 
+import json
 from typing import TypeVar
 import pytest
 import datetime
@@ -77,7 +78,7 @@ data_models = [
                         "description": "description of param1",
                         "constraint": "",
                         "type": "int",
-                        "value": 1,
+                        "value": "1",
                     },
                     {
                         "param_uuid": UUID("00000000-1002-1000-8000-000000000000"),
@@ -85,7 +86,7 @@ data_models = [
                         "description": "description of param2",
                         "constraint": "",
                         "type": "float",
-                        "value": 10.0,
+                        "value": "10.0",
                     },
                 ],
             },
@@ -104,7 +105,7 @@ data_models = [
                         "description": "description of param1",
                         "constraint": "",
                         "type": "int",
-                        "value": 10
+                        "value": "10"
                     },
                     {
                         "param_uuid": UUID("00000000-1002-1000-8000-000000000000"),
@@ -112,7 +113,7 @@ data_models = [
                         "description": "description of param2",
                         "constraint": "",
                         "type": "float",
-                        "value": 0.5,
+                        "value": "0.5",
                     },
                 ],
             },
@@ -167,6 +168,9 @@ def api_mock(requests_mock, testing_model):
     )
     requests_mock.register_uri(
         "GET", re.compile(r"testing://base/api/model/(\d*)/instance/(\d*)/parameter"), json=instance_parameter
+    )
+    requests_mock.register_uri(
+        "POST", re.compile(r"testing://base/api/model/(\d*)/instance/(\d*)/parameter"), json=instance_parameter_set
     )
     return requests_mock
 
@@ -255,3 +259,27 @@ def instance_parameter(request, context):
         (instance for instance in model["instances"] if instance["instance_uuid"] == instance_id), None
     )
     return instance["parameter"]
+
+
+@cache_controlled
+def instance_parameter_set(request, context):
+    match = re.search(r"testing://base/api/model/(\d*)/instance/(\d*)/parameter", str(request))
+    model_id = UUID(match[1])
+    instance_id = UUID(match[2])
+
+    req = json.loads(request.text)
+    param_id = UUID(req["param_uuid"])
+    param_value = req["value"]
+
+    for idx_m, model in enumerate(data_models):
+        if model["model_uuid"] == model_id:
+            for idx_i, instance in enumerate(model["instances"]):
+                if instance["instance_uuid"] == instance_id:
+                    for idx_p, param in enumerate(instance["parameter"]):
+                        if param_id == param["param_uuid"]:
+                            data_models[idx_m]["instances"][idx_i]["parameter"][idx_p]["value"] = param_value
+                            context.status_code = 200
+                            return {}
+
+    context.status_code = 404
+    return {}
