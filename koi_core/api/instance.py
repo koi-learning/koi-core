@@ -13,7 +13,7 @@
 # GNU Lesser General Public License is distributed along with this
 # software and can be found at http://www.gnu.org/licenses/lgpl.html
 from uuid import UUID
-from typing import Tuple
+from typing import Iterable, Tuple
 
 from .common import BaseAPI, _parse, _encode
 from koi_core.caching import CachingMeta
@@ -140,3 +140,10 @@ class APIInstances(BaseAPI):
     def update_parameter(self, id: InstanceId, parameter):
         path = self._build_path(id) + "/parameter"
         self._POST(path, data=parameter)
+
+    def merge_instances(self, id: InstanceId, merge: Iterable):
+        path = self._build_path(id) + "/merge"
+
+        json_object = {"instance_uuid": [merge_instance.id.instance_uuid.hex for merge_instance in merge]}
+
+        self._POST(path, data=json_object)
