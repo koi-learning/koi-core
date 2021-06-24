@@ -139,4 +139,4 @@ class APIInstances(BaseAPI):
 
     def update_parameter(self, id: InstanceId, parameter):
         path = self._build_path(id) + "/parameter"
-        self._POST(path, parameter)
+        self._POST(path, data=parameter)

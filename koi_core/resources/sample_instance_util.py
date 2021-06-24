@@ -104,12 +104,19 @@ class InstanceParameterAccessor:
         self._model_params = self.instance._get_parameter_values()
         self._allowed_keys = [x["name"] for x in self._model_params]
 
-    def _update_param(self, key: str, value):
-        parameter = {"param_uuid": "", "value": None}
+    def _update_param(self, value):
+        parameter = {"param_uuid": value["param_uuid"], "value": value["value"]}
         self.instance._set_parameter_value(parameter)
 
     def keys(self):
         return self._allowed_keys
+
+    def _cast(self, value, type_str):
+        look_up = {t.__name__: t for t in [int, float, str]}
+        if value is not None:
+            return look_up[type_str](value)
+        else:
+            return None
 
     def __getitem__(self, key: str):
         if key not in self._allowed_keys:
@@ -118,15 +125,15 @@ class InstanceParameterAccessor:
         self._update_allowed_keys()
 
         param = next(filter(lambda x: x["name"] == key, self._model_params))
-        return param["value"]
+        return self._cast(param["value"], param["type"])
 
     def __setitem__(self, key: str, value):
-        if key not in self._keys:
+        if key not in self._allowed_keys:
             raise KeyError
 
         param = next(filter(lambda x: x["name"] == key, self._model_params))
 
-        if str(type(value)) != param["type"]:
+        if type(value).__name__ != param["type"]:
             raise TypeError
 
         param["value"] = value
