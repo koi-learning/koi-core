@@ -21,9 +21,9 @@ from typing import Any, Dict, Hashable, Tuple, TypeVar
 
 
 class CachingMeta:
-    expires: datetime
-    last_modified: datetime
-    etag: str
+    expires: datetime = None
+    last_modified: datetime = None
+    etag: str = None
 
     def __eq__(self, other):
         if other is None:
