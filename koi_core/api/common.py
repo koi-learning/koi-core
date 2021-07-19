@@ -41,33 +41,48 @@ class BearerAuth(requests.auth.AuthBase):
         return r
 
 
+def getCachingMeta(header) -> CachingMeta:
+    """Parse all relevant information from the headers into a CachingMeta object"""
+    meta = None
+    if "Expires" in header and "Last-Modified" in header:
+        meta = CachingMeta()
+        meta.expires = datetime.strptime(header["Expires"], "%a, %d %b %Y %H:%M:%S GMT")
+        meta.last_modified = datetime.strptime(header["Last-Modified"], "%a, %d %b %Y %H:%M:%S GMT")
+
+    if meta is not None and "Etag" in header:
+        meta.etag = header["Etag"]
+
+    return meta
+
+
+def authenticate_locked(baseAPI: "BaseAPI"):
+    baseAPI._lock.acquire()
+    if not hasattr(baseAPI, "_token") or not baseAPI._token:
+        baseAPI.authenticate()
+        baseAPI._lock.release()
+    else:
+        baseAPI._lock.release()
+
+
 def authenticated_head(request_func: T) -> T:
     @functools.wraps(request_func)
     def func(self: "BaseAPI", *args, **kwargs):
-        self._lock.acquire()
-        if not hasattr(self, "_token") or not self._token:
-            self.authenticate()
-            self._lock.release()
-        else:
-            self._lock.release()
+        authenticate_locked(self)
 
         response = request_func(self, *args, auth=BearerAuth(self._token), **kwargs)
 
         if response.status_code != 200:
-            raise Exception(f"{response.status_code}: {response.content}")
+            if response.status_code == 404:
+                raise LookupError()
+            elif response.status_code == 401:
+                authenticate_locked(self)
+                response = request_func(self, *args, auth=BearerAuth(self._token), **kwargs)
+                if response.status_code != 200:
+                    raise Exception(f"{response.status_code}: {response.content}")
+            else:
+                raise Exception(f"{response.status_code}: {response.content}")
 
-        meta = None
-        if "Expires" in response.headers and "Last-Modified" in response.headers:
-            meta = CachingMeta()
-            meta.expires = datetime.strptime(
-                response.headers["Expires"], "%a, %d %b %Y %H:%M:%S GMT"
-            )
-            meta.last_modified = datetime.strptime(
-                response.headers["Last-Modified"], "%a, %d %b %Y %H:%M:%S GMT"
-            )
-
-        if meta is not None and "Etag" in response.headers:
-            meta.etag = response.headers["Etag"]
+        meta = getCachingMeta(response.headers)
 
         return meta
 
@@ -77,32 +92,22 @@ def authenticated_head(request_func: T) -> T:
 def authenticated_json(request_func: T) -> T:
     @functools.wraps(request_func)
     def func(self: "BaseAPI", *args, **kwargs):
-        self._lock.acquire()
-        if not hasattr(self, "_token") or not self._token:
-            self.authenticate()
-            self._lock.release()
-        else:
-            self._lock.release()
+        authenticate_locked(self)
 
         response = request_func(self, *args, auth=BearerAuth(self._token), **kwargs)
-        response: Response
+
         if response.status_code != 200:
-            raise Exception(f"{response.status_code}: {response.content}")
+            if response.status_code == 404:
+                raise LookupError()
+            elif response.status_code == 401:
+                authenticate_locked(self)
+                response = request_func(self, *args, auth=BearerAuth(self._token), **kwargs)
+                if response.status_code != 200:
+                    raise Exception(f"{response.status_code}: {response.content}")
+            else:
+                raise Exception(f"{response.status_code}: {response.content}")
 
-        # TODO check for not authenticated request
-
-        meta = None
-        if "Expires" in response.headers:
-            meta = CachingMeta()
-            meta.expires = datetime.strptime(
-                response.headers["Expires"], "%a, %d %b %Y %H:%M:%S GMT"
-            )
-            meta.last_modified = datetime.strptime(
-                response.headers["Last-Modified"], "%a, %d %b %Y %H:%M:%S GMT"
-            )
-
-        if meta is not None and "Etag" in response.headers:
-            meta.etag = response.headers["Etag"]
+        meta = getCachingMeta(response.headers)
 
         return response.json(), meta
 
@@ -112,34 +117,22 @@ def authenticated_json(request_func: T) -> T:
 def authenticated_raw(request_func: T) -> T:
     @functools.wraps(request_func)
     def func(self: "BaseAPI", *args, **kwargs):
-        self._lock.acquire()
-        if not hasattr(self, "_token") or not self._token:
-            self.authenticate()
-            self._lock.release()
-        else:
-            self._lock.release()
+        authenticate_locked(self)
 
         response = request_func(self, *args, auth=BearerAuth(self._token), **kwargs)
-        response: Response
+
         if response.status_code != 200:
             if response.status_code == 404:
                 raise LookupError()
-            raise Exception(f"{response.status_code}: {response.content}")
+            elif response.status_code == 401:
+                authenticate_locked(self)
+                response = request_func(self, *args, auth=BearerAuth(self._token), **kwargs)
+                if response.status_code != 200:
+                    raise Exception(f"{response.status_code}: {response.content}")
+            else:
+                raise Exception(f"{response.status_code}: {response.content}")
 
-        # TODO check for not authenticated request
-
-        meta = None
-        if "Expires" in response.headers:
-            meta = CachingMeta()
-            meta.expires = datetime.strptime(
-                response.headers["Expires"], "%a, %d %b %Y %H:%M:%S GMT"
-            )
-            meta.last_modified = datetime.strptime(
-                response.headers["Last-Modified"], "%a, %d %b %Y %H:%M:%S GMT"
-            )
-
-        if meta is not None and "Etag" in response.headers:
-            meta.etag = response.headers["Etag"]
+        meta = getCachingMeta(response.headers)
 
         return response.content, meta
 
@@ -172,8 +165,7 @@ class BaseAPI:
 
     def authenticate(self):
         response = self._session.post(
-            self._base_url + "/api/login",
-            json={"user_name": self._user, "password": self._password},
+            self._base_url + "/api/login", json={"user_name": self._user, "password": self._password},
         )
         if not response.status_code == 200:
             raise ValueError("invalid login")
@@ -228,10 +220,7 @@ class BaseAPI:
                 return None, new_meta
 
     def _build_path(
-        self,
-        id: Union[
-            ModelId, InstanceId, SampleId, SampleDatumId, SampleLableId, DescriptorId
-        ],
+        self, id: Union[ModelId, InstanceId, SampleId, SampleDatumId, SampleLableId, DescriptorId],
     ):
         path = "/api"
 
