@@ -93,11 +93,9 @@ class RunableInstance():
         self._process_name = f"koi_runable_{instance.name}"
         self.instance = instance
 
-        # use a spawn conext to fix the hanging forks on Posix systems
-        ctx = multiprocessing.get_context("spawn")
-        a, b = ctx.Pipe()
+        a, b = multiprocessing.Pipe()
         self._pipe = a
-        self._process = ctx.Process(
+        self._process = multiprocessing.Process(
             target=_process_run, args=(b, instance), name=self._process_name)
         self._process.start()
 
