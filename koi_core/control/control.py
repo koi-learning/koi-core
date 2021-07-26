@@ -31,6 +31,8 @@ def _set_instance(instance: Instance):
     # we need to load another instance:
     if _runable_instance is not None:
         _runable_instance.terminate()
+        _runable_instance = None
+
     _runable_instance = RunableInstance(instance)
 
 
