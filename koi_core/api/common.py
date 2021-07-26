@@ -55,9 +55,9 @@ def getCachingMeta(header) -> CachingMeta:
     return meta
 
 
-def authenticate_locked(baseAPI: "BaseAPI"):
+def authenticate_locked(baseAPI: "BaseAPI", force=False):
     baseAPI._lock.acquire()
-    if not hasattr(baseAPI, "_token") or not baseAPI._token:
+    if force or not hasattr(baseAPI, "_token") or not baseAPI._token:
         baseAPI.authenticate()
         baseAPI._lock.release()
     else:
@@ -75,7 +75,7 @@ def authenticated_head(request_func: T) -> T:
             if response.status_code == 404:
                 raise LookupError()
             elif response.status_code == 401:
-                authenticate_locked(self)
+                authenticate_locked(self, True)
                 response = request_func(self, *args, auth=BearerAuth(self._token), **kwargs)
                 if response.status_code != 200:
                     raise Exception(f"{response.status_code}: {response.content}")
@@ -100,7 +100,7 @@ def authenticated_json(request_func: T) -> T:
             if response.status_code == 404:
                 raise LookupError()
             elif response.status_code == 401:
-                authenticate_locked(self)
+                authenticate_locked(self, True)
                 response = request_func(self, *args, auth=BearerAuth(self._token), **kwargs)
                 if response.status_code != 200:
                     raise Exception(f"{response.status_code}: {response.content}")
@@ -125,7 +125,7 @@ def authenticated_raw(request_func: T) -> T:
             if response.status_code == 404:
                 raise LookupError()
             elif response.status_code == 401:
-                authenticate_locked(self)
+                authenticate_locked(self, True)
                 response = request_func(self, *args, auth=BearerAuth(self._token), **kwargs)
                 if response.status_code != 200:
                     raise Exception(f"{response.status_code}: {response.content}")
