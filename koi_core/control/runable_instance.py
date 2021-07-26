@@ -80,6 +80,7 @@ def _process_run(pipe, instance: Instance):
                 pipe.send(_ExceptionResponse(e))
 
     pipe.send(_ExitResponse())
+    return 0
 
 
 def _check_for_exceptions(response):
@@ -114,4 +115,13 @@ class RunableInstance():
         return response.batch_iterable
 
     def terminate(self):
-        self._process.terminate()
+        # send the exit command to the process
+        self._pipe.send(_ExitCommand())
+
+        # wait for the process to finish
+        self._process.join(0.5)
+
+        # check the processes exit code
+        if self._process.exitcode is not None:
+            # kill if necessary
+            self._process.terminate()
