@@ -20,6 +20,7 @@ import configargparse
 import colorama
 import signal
 import sys
+import multiprocessing
 import koi_core as koi
 from time import sleep
 
@@ -95,8 +96,18 @@ if __name__ == "__main__":
         required=True,
         help="the password for authentication",
     )
+    p.add(
+        "-x",
+        "--start-method",
+        type=str,
+        default="NONE",
+        help="The startmethod used for multiprocessing",
+    )
 
     opt = p.parse_args()
+
+    if not opt.start_method == "NONE":
+        multiprocessing.set_start_method(opt.start_method)
 
     # initialize colored output for windows
     colorama.init()
