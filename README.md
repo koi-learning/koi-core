@@ -128,6 +128,43 @@ for model in models:
     new_instance = model.new_instance()
 ```
 
+# Development
+
+## Setup
+
+We suggest to use a virtualenv. Clone the repository and run:
+
+On Linux:
+```
+pip install virtualenv
+virtualenv venv
+source ./venv/bin/activate
+pip install -r requirements.txt
+```
+
+On Windows:
+```
+pip install virtualenv
+virtualenv venv
+.\venv\Scripts\activate
+pip install -r requirements.txt
+```
+
+## Tests
+
+To run the tests simple run
+
+> pytest
+
+or use your IDEs Pytest plugin. For VS Code we suggest: "Python Test Explorer for Visual Studio Code"
+
+if you want to generate a coverage report execute:
+
+```
+coverage run --source=koi_core --branch -m pytest
+coverage xml
+```
+
 # Copying & Contributing
 *koi-core* was originally written by Johannes Richter (GÖPEL electronics, Jena) and Johannes Nau (Technische Universität Ilmenau).
 The source code is licensed under the terms of LGPLv3, please see [COPYING](COPYING) and [COPYING.LESSER](COPYING.LESSER) for details.
