@@ -24,6 +24,8 @@ from functools import wraps
 
 from json import JSONEncoder
 from uuid import UUID
+import requests
+import requests_mock
 
 JSONEncoder_olddefault = JSONEncoder.default
 
@@ -105,7 +107,7 @@ data_models = [
                         "description": "description of param1",
                         "constraint": "",
                         "type": "int",
-                        "value": "10"
+                        "value": "10",
                     },
                     {
                         "param_uuid": UUID("00000000-1002-1000-8000-000000000000"),
@@ -152,27 +154,105 @@ def cache_controlled(func: T) -> T:
 
 
 @pytest.fixture
-def api_mock(requests_mock, testing_model):
+def api_mock(testing_model):
     data_code["testing_model"] = testing_model
 
-    requests_mock.register_uri("POST", "testing://base/api/login", json=login)
-    requests_mock.register_uri("GET", "testing://base/api/model", json=models)
-    requests_mock.register_uri("GET", re.compile(r"testing://base/api/model/(\d*)/parameter"), json=model_parameter)
+    class ApiMock:
+        requests_mock = None
 
-    requests_mock.register_uri(
-        "GET", re.compile(r"testing://base/api/model/(\d*)/code"), content=model_code
-    )
+        def __init__(self):
+            self.set_online()
 
-    requests_mock.register_uri(
-        "GET", re.compile(r"testing://base/api/model/(\d*)/instance"), json=instances
-    )
-    requests_mock.register_uri(
-        "GET", re.compile(r"testing://base/api/model/(\d*)/instance/(\d*)/parameter"), json=instance_parameter
-    )
-    requests_mock.register_uri(
-        "POST", re.compile(r"testing://base/api/model/(\d*)/instance/(\d*)/parameter"), json=instance_parameter_set
-    )
-    return requests_mock
+        def set_online(self):
+            if self.requests_mock:
+                self.requests_mock.stop()
+            self.requests_mock = requests_mock.MockerCore()
+            self.requests_mock.start()
+
+            self.requests_mock.register_uri(
+                "POST", "testing://base/api/login", json=login
+            )
+            self.requests_mock.register_uri(
+                "GET", "testing://base/api/model", json=models
+            )
+            self.requests_mock.register_uri(
+                "GET",
+                re.compile(r"testing://base/api/model/(\d*)/parameter"),
+                json=model_parameter,
+            )
+
+            self.requests_mock.register_uri(
+                "GET",
+                re.compile(r"testing://base/api/model/(\d*)/code"),
+                content=model_code,
+            )
+
+            self.requests_mock.register_uri(
+                "GET",
+                re.compile(r"testing://base/api/model/(\d*)/instance"),
+                json=instances,
+            )
+            self.requests_mock.register_uri(
+                "GET",
+                re.compile(r"testing://base/api/model/(\d*)/instance/(\d*)"),
+                json=instance,
+            )
+            self.requests_mock.register_uri(
+                "GET",
+                re.compile(r"testing://base/api/model/(\d*)/instance/(\d*)/parameter"),
+                json=instance_parameter,
+            )
+            self.requests_mock.register_uri(
+                "POST",
+                re.compile(r"testing://base/api/model/(\d*)/instance/(\d*)/parameter"),
+                json=instance_parameter_set,
+            )
+
+        def set_offline(self):
+            if self.requests_mock:
+                self.requests_mock.stop()
+            self.requests_mock = requests_mock.MockerCore()
+            self.requests_mock.start()
+
+            self.requests_mock.register_uri(
+                "POST",
+                "testing://base/api/login",
+                exc=requests.exceptions.ConnectTimeout,
+            )
+            self.requests_mock.register_uri(
+                "GET",
+                "testing://base/api/model",
+                exc=requests.exceptions.ConnectTimeout,
+            )
+            self.requests_mock.register_uri(
+                "GET",
+                re.compile(r"testing://base/api/model/(\d*)/parameter"),
+                exc=requests.exceptions.ConnectTimeout,
+            )
+
+            self.requests_mock.register_uri(
+                "GET",
+                re.compile(r"testing://base/api/model/(\d*)/code"),
+                exc=requests.exceptions.ConnectTimeout,
+            )
+
+            self.requests_mock.register_uri(
+                "GET",
+                re.compile(r"testing://base/api/model/(\d*)/instance"),
+                exc=requests.exceptions.ConnectTimeout,
+            )
+            self.requests_mock.register_uri(
+                "GET",
+                re.compile(r"testing://base/api/model/(\d*)/instance/(\d*)/parameter"),
+                exc=requests.exceptions.ConnectTimeout,
+            )
+            self.requests_mock.register_uri(
+                "POST",
+                re.compile(r"testing://base/api/model/(\d*)/instance/(\d*)/parameter"),
+                exc=requests.exceptions.ConnectTimeout,
+            )
+
+    yield ApiMock()
 
 
 def login(request, context):
@@ -246,8 +326,8 @@ def instances(request, context):
 
 
 @cache_controlled
-def instance_parameter(request, context):
-    match = re.search(r"testing://base/api/model/(\d*)/instance/(\d*)/parameter", str(request))
+def instance(request, context):
+    match = re.search(r"testing://base/api/model/(\d*)/instance/(\d*)", str(request))
     model_id = UUID(match[1])
     instance_id = UUID(match[2])
 
@@ -256,14 +336,26 @@ def instance_parameter(request, context):
     )
 
     instance = next(
-        (instance for instance in model["instances"] if instance["instance_uuid"] == instance_id), None
+        (
+            instance
+            for instance in model["instances"]
+            if instance["instance_uuid"] == instance_id
+        ),
+        None,
     )
-    return instance["parameter"]
+    return instance
+
+
+@cache_controlled
+def instance_parameter(request, context):
+    return instance(request, context)["parameter"]
 
 
 @cache_controlled
 def instance_parameter_set(request, context):
-    match = re.search(r"testing://base/api/model/(\d*)/instance/(\d*)/parameter", str(request))
+    match = re.search(
+        r"testing://base/api/model/(\d*)/instance/(\d*)/parameter", str(request)
+    )
     model_id = UUID(match[1])
     instance_id = UUID(match[2])
 
@@ -277,7 +369,9 @@ def instance_parameter_set(request, context):
                 if instance["instance_uuid"] == instance_id:
                     for idx_p, param in enumerate(instance["parameter"]):
                         if param_id == param["param_uuid"]:
-                            data_models[idx_m]["instances"][idx_i]["parameter"][idx_p]["value"] = param_value
+                            data_models[idx_m]["instances"][idx_i]["parameter"][idx_p][
+                                "value"
+                            ] = param_value
                             context.status_code = 200
                             return {}
 
