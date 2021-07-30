@@ -12,7 +12,7 @@
 # Lesser General Public License for more details. A copy of the
 # GNU Lesser General Public License is distributed along with this
 # software and can be found at http://www.gnu.org/licenses/lgpl.html
-from requests.models import Response
+from koi_core.exceptions import KoiApiOfflineException
 from requests.auth import AuthBase
 from koi_core.resources.ids import (
     InstanceId,
@@ -47,7 +47,9 @@ def getCachingMeta(header) -> CachingMeta:
     if "Expires" in header and "Last-Modified" in header:
         meta = CachingMeta()
         meta.expires = datetime.strptime(header["Expires"], "%a, %d %b %Y %H:%M:%S GMT")
-        meta.last_modified = datetime.strptime(header["Last-Modified"], "%a, %d %b %Y %H:%M:%S GMT")
+        meta.last_modified = datetime.strptime(
+            header["Last-Modified"], "%a, %d %b %Y %H:%M:%S GMT"
+        )
 
     if meta is not None and "Etag" in header:
         meta.etag = header["Etag"]
@@ -56,33 +58,49 @@ def getCachingMeta(header) -> CachingMeta:
 
 
 def authenticate_locked(baseAPI: "BaseAPI", force=False):
-    baseAPI._lock.acquire()
+    baseAPI._common_api._lock.acquire()
     if force or not hasattr(baseAPI, "_token") or not baseAPI._token:
         baseAPI.authenticate()
-        baseAPI._lock.release()
+        baseAPI._common_api._lock.release()
     else:
-        baseAPI._lock.release()
+        baseAPI._common_api._lock.release()
+
+
+def common_authenticated(self: "BaseAPI", request_func, *args, **kwargs):
+    if not self._common_api.online:
+        raise KoiApiOfflineException()
+
+    authenticate_locked(self)
+
+    try:
+        response = request_func(
+            self, *args, auth=BearerAuth(self._common_api._token), **kwargs
+        )
+    except requests.exceptions.Timeout:
+        self._common_api.online = False
+        raise KoiApiOfflineException()
+
+    if response.status_code != 200:
+        if response.status_code == 404:
+            raise LookupError()
+        elif response.status_code == 401:
+            authenticate_locked(self, True)
+            response = request_func(
+                self, *args, auth=BearerAuth(self._common_api._token), **kwargs
+            )
+            if response.status_code != 200:
+                raise Exception(f"{response.status_code}: {response.content}")
+        else:
+            raise Exception(f"{response.status_code}: {response.content}")
+
+    meta = getCachingMeta(response.headers)
+    return response, meta
 
 
 def authenticated_head(request_func: T) -> T:
     @functools.wraps(request_func)
     def func(self: "BaseAPI", *args, **kwargs):
-        authenticate_locked(self)
-
-        response = request_func(self, *args, auth=BearerAuth(self._token), **kwargs)
-
-        if response.status_code != 200:
-            if response.status_code == 404:
-                raise LookupError()
-            elif response.status_code == 401:
-                authenticate_locked(self, True)
-                response = request_func(self, *args, auth=BearerAuth(self._token), **kwargs)
-                if response.status_code != 200:
-                    raise Exception(f"{response.status_code}: {response.content}")
-            else:
-                raise Exception(f"{response.status_code}: {response.content}")
-
-        meta = getCachingMeta(response.headers)
+        response, meta = common_authenticated(self, request_func, *args, **kwargs)
 
         return meta
 
@@ -92,22 +110,7 @@ def authenticated_head(request_func: T) -> T:
 def authenticated_json(request_func: T) -> T:
     @functools.wraps(request_func)
     def func(self: "BaseAPI", *args, **kwargs):
-        authenticate_locked(self)
-
-        response = request_func(self, *args, auth=BearerAuth(self._token), **kwargs)
-
-        if response.status_code != 200:
-            if response.status_code == 404:
-                raise LookupError()
-            elif response.status_code == 401:
-                authenticate_locked(self, True)
-                response = request_func(self, *args, auth=BearerAuth(self._token), **kwargs)
-                if response.status_code != 200:
-                    raise Exception(f"{response.status_code}: {response.content}")
-            else:
-                raise Exception(f"{response.status_code}: {response.content}")
-
-        meta = getCachingMeta(response.headers)
+        response, meta = common_authenticated(self, request_func, *args, **kwargs)
 
         return response.json(), meta
 
@@ -117,22 +120,7 @@ def authenticated_json(request_func: T) -> T:
 def authenticated_raw(request_func: T) -> T:
     @functools.wraps(request_func)
     def func(self: "BaseAPI", *args, **kwargs):
-        authenticate_locked(self)
-
-        response = request_func(self, *args, auth=BearerAuth(self._token), **kwargs)
-
-        if response.status_code != 200:
-            if response.status_code == 404:
-                raise LookupError()
-            elif response.status_code == 401:
-                authenticate_locked(self, True)
-                response = request_func(self, *args, auth=BearerAuth(self._token), **kwargs)
-                if response.status_code != 200:
-                    raise Exception(f"{response.status_code}: {response.content}")
-            else:
-                raise Exception(f"{response.status_code}: {response.content}")
-
-        meta = getCachingMeta(response.headers)
+        response, meta = common_authenticated(self, request_func, *args, **kwargs)
 
         return response.content, meta
 
@@ -156,48 +144,68 @@ def _encode(object, cls, mapping):
 
 
 class BaseAPI:
-    def __init__(self, lock, base_url, username, password, session):
-        self._lock = lock
-        self._base_url = base_url
-        self._user = username
-        self._password = password
-        self._session = session
+    def __init__(self, common_api):
+        self._common_api = common_api
 
     def authenticate(self):
-        response = self._session.post(
-            self._base_url + "/api/login", json={"user_name": self._user, "password": self._password},
-        )
-        if not response.status_code == 200:
-            raise ValueError("invalid login")
-        self._token = response.json()["token"]
+        if not self._common_api.online:
+            raise KoiApiOfflineException()
+        try:
+            response = self._common_api._session.post(
+                self._common_api._base_url + "/api/login",
+                json={
+                    "user_name": self._common_api._user,
+                    "password": self._common_api._password,
+                },
+            )
+            if not response.status_code == 200:
+                raise ValueError("invalid login")
+            self._common_api._token = response.json()["token"]
+        except requests.exceptions.Timeout:
+            self._common_api.online = False
+            raise KoiApiOfflineException()
 
     @authenticated_head
     def _HEAD(self, path: str, auth: AuthBase):
-        return self._session.head(self._base_url + path, auth=auth)
+        return self._common_api._session.head(
+            self._common_api._base_url + path, auth=auth
+        )
 
     @authenticated_json
     def _DELETE(self, path: str, auth: AuthBase):
-        return self._session.delete(self._base_url + path, auth=auth)
+        return self._common_api._session.delete(
+            self._common_api._base_url + path, auth=auth
+        )
 
     @authenticated_json
     def _POST(self, path: str, auth: AuthBase, data: Any = None):
-        return self._session.post(self._base_url + path, json=data, auth=auth)
+        return self._common_api._session.post(
+            self._common_api._base_url + path, json=data, auth=auth
+        )
 
     @authenticated_json
     def _GET(self, path: str, auth: AuthBase, parameter=None):
-        return self._session.get(self._base_url + path, params=parameter, auth=auth)
+        return self._common_api._session.get(
+            self._common_api._base_url + path, params=parameter, auth=auth
+        )
 
     @authenticated_json
     def _PUT(self, path: str, auth: AuthBase, data: Any = None):
-        return self._session.put(self._base_url + path, json=data, auth=auth)
+        return self._common_api._session.put(
+            self._common_api._base_url + path, json=data, auth=auth
+        )
 
     @authenticated_raw
     def _GET_raw(self, path, auth: AuthBase) -> Tuple[bytes, CachingMeta]:
-        return self._session.get(self._base_url + path, auth=auth)
+        return self._common_api._session.get(
+            self._common_api._base_url + path, auth=auth
+        )
 
     @authenticated_json
     def _POST_raw(self, path: str, auth: AuthBase, data: bytes = None):
-        return self._session.post(self._base_url + path, data=data, auth=auth)
+        return self._common_api._session.post(
+            self._common_api._base_url + path, data=data, auth=auth
+        )
 
     def GET(self, path: str, meta: CachingMeta = None):
         if meta is None:
@@ -220,7 +228,10 @@ class BaseAPI:
                 return None, new_meta
 
     def _build_path(
-        self, id: Union[ModelId, InstanceId, SampleId, SampleDatumId, SampleLableId, DescriptorId],
+        self,
+        id: Union[
+            ModelId, InstanceId, SampleId, SampleDatumId, SampleLableId, DescriptorId
+        ],
     ):
         path = "/api"
 

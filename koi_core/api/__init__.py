@@ -27,7 +27,8 @@ class API:
         self._user = username
         self._password = password
         self._session = requests.Session()
+        self.online = True
 
-        self.models = APIModels(self._lock, base_url, username, password, self._session)
-        self.instances = APIInstances(self._lock, base_url, username, password, self._session)
-        self.samples = APISamples(self._lock, base_url, username, password, self._session)
+        self.models = APIModels(self)
+        self.instances = APIInstances(self)
+        self.samples = APISamples(self)
