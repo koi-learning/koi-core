@@ -15,6 +15,7 @@
 
 import datetime
 from functools import wraps
+from koi_core.api.common import KoiApiOfflineException
 from koi_core.caching_strategy import CachingStrategy
 from koi_core.caching_persistence import getCachingPersistence
 from typing import Any, Dict, Hashable, Tuple, TypeVar
@@ -63,6 +64,11 @@ def setIndexedCache(self, key: str, index, value: T) -> T:
     return value
 
 
+def offlineFeature(func: T) -> T:
+    func._offline_feature_ = True
+    return func
+
+
 def cache(func: T) -> T:
     key = func.__name__
 
@@ -73,16 +79,27 @@ def cache(func: T) -> T:
         if key not in self._cache:
             self._cache[key] = dict()  # type: ignore
 
-        if 0 not in self._cache[key]:
-            self._cache[key][0] = func(self, None)  # type: ignore
-        elif not self.cachingStrategy.isValid(self, key, self._cache[key][0][1]):
-            obj, new_meta = func(self, self._cache[key][0][1])
-            if obj is None:
-                # we receive None in case no update was needed
-                self._cache[key][0] = (self._cache[key][0][0], new_meta)  # type: ignore
+        try:
+            if 0 not in self._cache[key]:
+                self._cache[key][0] = func(self, None)  # type: ignore
+            elif not self.cachingStrategy.isValid(self, key, self._cache[key][0][1]):
+                obj, new_meta = func(self, self._cache[key][0][1])
+                if obj is None:
+                    # we receive None in case no update was needed
+                    self._cache[key][0] = (self._cache[key][0][0], new_meta)  # type: ignore
+                else:
+                    self._cache[key][0] = (obj, new_meta)  # type: ignore
+            return self._cache[key][0][0]
+        except KoiApiOfflineException:
+            if hasattr(func, "_offline_feature_"):
+                if 0 not in self._cache[key]:
+                    raise KoiApiOfflineException("The Data for this Feature was cached")
+                else:
+                    return self._cache[key][0][0]
             else:
-                self._cache[key][0] = (obj, new_meta)  # type: ignore
-        return self._cache[key][0][0]
+                raise KoiApiOfflineException(
+                    "This Feature is not available in Offline Mode"
+                )
 
     return wrapper
 
@@ -97,15 +114,28 @@ def indexedCache(func: T) -> T:
         if key not in self._cache:
             self._cache[key] = dict()  # type: ignore
 
-        if index not in self._cache[key]:
-            self._cache[key][index] = func(self, index, None)  # type: ignore
-        elif not self.cachingStrategy.isValid(self, key, self._cache[key][index][1]):
-            obj, new_meta = func(self, index, self._cache[key][index][1])
-            if obj is None:
-                # we receive None in case no update was needed
-                self._cache[key][index] = (self._cache[key][index][0], new_meta)  # type: ignore
+        try:
+            if index not in self._cache[key]:
+                self._cache[key][index] = func(self, index, None)  # type: ignore
+            elif not self.cachingStrategy.isValid(
+                self, key, self._cache[key][index][1]
+            ):
+                obj, new_meta = func(self, index, self._cache[key][index][1])
+                if obj is None:
+                    # we receive None in case no update was needed
+                    self._cache[key][index] = (self._cache[key][index][0], new_meta)  # type: ignore
+                else:
+                    self._cache[key][index] = (obj, new_meta)  # type: ignore
+            return self._cache[key][index][0]
+        except KoiApiOfflineException:
+            if hasattr(func, "_offline_feature_"):
+                if index not in self._cache[key]:
+                    raise KoiApiOfflineException("The Data for this Feature was cached")
+                else:
+                    return self._cache[key][index][0]
             else:
-                self._cache[key][index] = (obj, new_meta)  # type: ignore
-        return self._cache[key][index][0]
+                raise KoiApiOfflineException(
+                    "This Feature is not available in Offline Mode"
+                )
 
     return wrapper
