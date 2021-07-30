@@ -82,7 +82,7 @@ def cache(func: T) -> T:
         try:
             if 0 not in self._cache[key]:
                 self._cache[key][0] = func(self, None)  # type: ignore
-            elif not self.cachingStrategy.isValid(self, key, self._cache[key][0][1]):
+            elif not self.cachingStrategy.isValid(type(self), key, self._cache[key][0][1]):
                 obj, new_meta = func(self, self._cache[key][0][1])
                 if obj is None:
                     # we receive None in case no update was needed
@@ -118,7 +118,7 @@ def indexedCache(func: T) -> T:
             if index not in self._cache[key]:
                 self._cache[key][index] = func(self, index, None)  # type: ignore
             elif not self.cachingStrategy.isValid(
-                self, key, self._cache[key][index][1]
+                type(self), key, self._cache[key][index][1]
             ):
                 obj, new_meta = func(self, index, self._cache[key][index][1])
                 if obj is None:

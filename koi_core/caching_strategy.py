@@ -17,29 +17,29 @@ from datetime import datetime
 
 
 class CachingStrategy:
-    def isValid(self, proxy, key, meta):
+    def isValid(self, proxy_cls, key, meta):
         ...
 
-    def shouldPersist(self, proxy, key, meta):
+    def shouldPersist(self, proxy_cls, key, meta):
         ...
 
 
 class ExpireCachingStrategy:
-    def isValid(self, proxy, key, meta):
+    def isValid(self, proxy_cls, key, meta):
         now = datetime.utcnow()
 
         # Cache all PoolObjects
-        t = type(proxy).__name__
+        t = proxy_cls.__name__
         if t in ["LocalOnlyObjectPool", "APIObjectPool"]:
-            return True
+                return True
 
         if meta is None or now >= meta.expires:
             return False
         else:
             return True
 
-    def shouldPersist(self, proxy, key, meta):
-        t = type(proxy).__name__
+    def shouldPersist(self, proxy_cls, key, meta):
+        t = proxy_cls.__name__
 
         if t == "ModelProxy":
             if key in [
@@ -73,8 +73,8 @@ class ExpireCachingStrategy:
 
 
 class LocalOnlyCachingStrategy:
-    def isValid(self, proxy, key, meta):
+    def isValid(self, proxy_cls, key, meta):
         return True
 
-    def shouldPersist(self, proxy, key, meta):
+    def shouldPersist(self, proxy_cls, key, meta):
         return False
