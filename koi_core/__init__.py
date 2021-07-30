@@ -15,6 +15,7 @@
 
 from koi_core.caching_persistence import (
     CachingPersistence,
+    CachingPersistenceMock,
     getCachingPersistence,
     setCachingPersistence,
 )
@@ -22,15 +23,28 @@ from koi_core.api import API
 from koi_core.resources.model import LocalCode
 from koi_core.resources.instance import Instance
 from koi_core.resources.pool import APIObjectPool, LocalOnlyObjectPool
+from koi_core.exceptions import KoiInitializationError
 import koi_core.control
+
+_isInitialized = False
 
 
 def init():
-    pass
+    global _isInitialized
+    if _isInitialized:
+        raise KoiInitializationError("KOI Core must be initialized only once")
+    setCachingPersistence(CachingPersistenceMock())
+    _isInitialized = True
 
 
 def deinit():
+    global _isInitialized
+    if not _isInitialized:
+        raise KoiInitializationError(
+            "KOI Core must be initialized before deinitialization"
+        )
     getCachingPersistence().persistify()
+    _isInitialized = False
 
 
 def create_api_object_pool(
