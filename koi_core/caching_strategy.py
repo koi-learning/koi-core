@@ -31,6 +31,9 @@ class ExpireCachingStrategy:
         # Cache all PoolObjects
         t = proxy_cls.__name__
         if t in ["LocalOnlyObjectPool", "APIObjectPool"]:
+            if key in ["_get_models"]:
+                return False
+            else:
                 return True
 
         if meta is None or now >= meta.expires:
@@ -48,11 +51,20 @@ class ExpireCachingStrategy:
                 "request_plugin",
                 "visual_plugin",
                 "_instance_ids",
+                "parameters",
             ]:
                 return True
             return False
         if t == "InstanceProxy":
-            if key in ["_basic_fields", "training_data", "inference_data", "_samples"]:
+            if key in [
+                "_basic_fields",
+                "training_data",
+                "inference_data",
+                "_samples",
+                "_get_parameter_values",
+                "__get_descriptors",
+                "_get_available_parameters",
+            ]:
                 return True
             return False
         if t == "DescriptorProxy":
@@ -68,6 +80,8 @@ class ExpireCachingStrategy:
                 return True
             return False
         if t in ["LocalOnlyObjectPool", "APIObjectPool"]:
+            if key in ["_get_models"]:
+                return True
             return False
         return False
 

@@ -14,7 +14,7 @@
 # software and can be found at http://www.gnu.org/licenses/lgpl.html
 
 import io
-from koi_core.caching import cache
+from koi_core.caching import cache, offlineFeature
 from koi_core.resources.ids import InstanceId, ModelId
 import os
 import sys
@@ -98,6 +98,7 @@ class ModelBasicFields:
 class ModelProxy(Model):
     @property
     @cache
+    @offlineFeature
     def _basic_fields(self, meta) -> ModelBasicFields:
         return self.pool.api.models.get_model(self.id, meta)
 
@@ -121,6 +122,7 @@ class ModelProxy(Model):
 
     @property
     @cache
+    @offlineFeature
     def _code(self, meta) -> bytes:
         return self.pool.api.models.get_model_code(self.id, meta)
 
@@ -135,6 +137,7 @@ class ModelProxy(Model):
 
     @property
     @cache
+    @offlineFeature
     def request_plugin(self, meta) -> Any:
         return self.pool.api.models.get_model_request_plugin(self.id, meta)
 
@@ -144,6 +147,7 @@ class ModelProxy(Model):
 
     @property
     @cache
+    @offlineFeature
     def visual_plugin(self, meta) -> Any:
         return self.pool.api.models.get_model_visual_plugin(self.id, meta)
 
@@ -162,6 +166,7 @@ class ModelProxy(Model):
 
     @property
     @cache
+    @offlineFeature
     def parameters(self, meta) -> Iterable[dict]:
         return self.pool.api.models.get_model_parameters(self.id, meta)
 
