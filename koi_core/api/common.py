@@ -12,6 +12,8 @@
 # Lesser General Public License for more details. A copy of the
 # GNU Lesser General Public License is distributed along with this
 # software and can be found at http://www.gnu.org/licenses/lgpl.html
+
+from multiprocessing import Lock
 from koi_core.exceptions import KoiApiOfflineException
 from requests.auth import AuthBase
 from koi_core.resources.ids import (
@@ -58,26 +60,26 @@ def getCachingMeta(header) -> CachingMeta:
 
 
 def authenticate_locked(baseAPI: "BaseAPI", force=False):
-    baseAPI._common_api._lock.acquire()
+    baseAPI._lock.acquire()
     if force or not hasattr(baseAPI, "_token") or not baseAPI._token:
         baseAPI.authenticate()
-        baseAPI._common_api._lock.release()
+        baseAPI._lock.release()
     else:
-        baseAPI._common_api._lock.release()
+        baseAPI._lock.release()
 
 
 def common_authenticated(self: "BaseAPI", request_func, *args, **kwargs):
-    if not self._common_api.online:
+    if not self.online:
         raise KoiApiOfflineException()
 
     authenticate_locked(self)
 
     try:
         response = request_func(
-            self, *args, auth=BearerAuth(self._common_api._token), **kwargs
+            self, *args, auth=BearerAuth(self._token), **kwargs
         )
     except requests.exceptions.Timeout:
-        self._common_api.online = False
+        self.online = False
         raise KoiApiOfflineException()
 
     if response.status_code != 200:
@@ -86,7 +88,7 @@ def common_authenticated(self: "BaseAPI", request_func, *args, **kwargs):
         elif response.status_code == 401:
             authenticate_locked(self, True)
             response = request_func(
-                self, *args, auth=BearerAuth(self._common_api._token), **kwargs
+                self, *args, auth=BearerAuth(self._token), **kwargs
             )
             if response.status_code != 200:
                 raise Exception(f"{response.status_code}: {response.content}")
@@ -144,67 +146,146 @@ def _encode(object, cls, mapping):
 
 
 class BaseAPI:
-    def __init__(self, common_api):
-        self._common_api = common_api
+    """This class will always raise a KoiOfflineException. I.e. this class will respond like a normal API which is always offline"""
+
+    def __init__(self):
+        self._base_url = "offline://"
+        self.online = False
 
     def authenticate(self):
-        if not self._common_api.online:
+        raise KoiApiOfflineException()
+
+    def _HEAD(self, path: str, auth: AuthBase) -> CachingMeta:
+        raise KoiApiOfflineException()
+
+    def _DELETE(self, path: str, auth: AuthBase) -> Tuple[Any, CachingMeta]:
+        raise KoiApiOfflineException()
+
+    def _POST(
+        self, path: str, auth: AuthBase, data: Any = None
+    ) -> Tuple[Any, CachingMeta]:
+        raise KoiApiOfflineException()
+
+    def _GET(
+        self, path: str, auth: AuthBase, parameter=None
+    ) -> Tuple[Any, CachingMeta]:
+        raise KoiApiOfflineException()
+
+    def _PUT(
+        self, path: str, auth: AuthBase, data: Any = None
+    ) -> Tuple[Any, CachingMeta]:
+        raise KoiApiOfflineException()
+
+    def _GET_raw(self, path, auth: AuthBase) -> Tuple[bytes, CachingMeta]:
+        raise KoiApiOfflineException()
+
+    def _POST_raw(
+        self, path: str, auth: AuthBase, data: bytes = None
+    ) -> Tuple[Any, CachingMeta]:
+        raise KoiApiOfflineException()
+
+    def GET(self, path: str, meta: CachingMeta = None) -> Tuple[Any, CachingMeta]:
+        raise KoiApiOfflineException()
+
+    def GET_RAW(self, path: str, meta: CachingMeta = None) -> Tuple[bytes, CachingMeta]:
+        raise KoiApiOfflineException()
+
+    def _build_path(
+        self,
+        id: Union[
+            ModelId,
+            InstanceId,
+            SampleId,
+            SampleDatumId,
+            SampleLableId,
+            DescriptorId,
+        ],
+    ):
+        path = "/api"
+
+        if isinstance(id, ModelId):
+            path = path + f"/model/{id.model_uuid.hex}"
+        if isinstance(id, InstanceId):
+            path = path + f"/instance/{id.instance_uuid.hex}"
+        if isinstance(id, DescriptorId):
+            path = path + f"/descriptor/{id.descriptor_uuid.hex}"
+        if isinstance(id, SampleId):
+            path = path + f"/sample/{id.sample_uuid.hex}"
+        if isinstance(id, SampleDatumId):
+            path = path + f"/data/{id.sample_datum_uuid.hex}"
+        if isinstance(id, SampleLableId):
+            path = path + f"/label/{id.sample_label_uuid.hex}"
+
+        return path
+
+
+class RequestsAPI(BaseAPI):
+    def __init__(self, base_url: str, username: str, password: str):
+        self._lock = Lock()
+        self._base_url = base_url
+        self._user = username
+        self._password = password
+        self._session = requests.Session()
+        self.online = True
+
+    def authenticate(self):
+        if not self.online:
             raise KoiApiOfflineException()
         try:
-            response = self._common_api._session.post(
-                self._common_api._base_url + "/api/login",
+            response = self._session.post(
+                self._base_url + "/api/login",
                 json={
-                    "user_name": self._common_api._user,
-                    "password": self._common_api._password,
+                    "user_name": self._user,
+                    "password": self._password,
                 },
             )
             if not response.status_code == 200:
                 raise ValueError("invalid login")
-            self._common_api._token = response.json()["token"]
+            self._token = response.json()["token"]
         except requests.exceptions.Timeout:
-            self._common_api.online = False
+            self.online = False
             raise KoiApiOfflineException()
 
     @authenticated_head
     def _HEAD(self, path: str, auth: AuthBase):
-        return self._common_api._session.head(
-            self._common_api._base_url + path, auth=auth
+        return self._session.head(
+            self._base_url + path, auth=auth
         )
 
     @authenticated_json
     def _DELETE(self, path: str, auth: AuthBase):
-        return self._common_api._session.delete(
-            self._common_api._base_url + path, auth=auth
+        return self._session.delete(
+            self._base_url + path, auth=auth
         )
 
     @authenticated_json
     def _POST(self, path: str, auth: AuthBase, data: Any = None):
-        return self._common_api._session.post(
-            self._common_api._base_url + path, json=data, auth=auth
+        return self._session.post(
+            self._base_url + path, json=data, auth=auth
         )
 
     @authenticated_json
     def _GET(self, path: str, auth: AuthBase, parameter=None):
-        return self._common_api._session.get(
-            self._common_api._base_url + path, params=parameter, auth=auth
+        return self._session.get(
+            self._base_url + path, params=parameter, auth=auth
         )
 
     @authenticated_json
     def _PUT(self, path: str, auth: AuthBase, data: Any = None):
-        return self._common_api._session.put(
-            self._common_api._base_url + path, json=data, auth=auth
+        return self._session.put(
+            self._base_url + path, json=data, auth=auth
         )
 
     @authenticated_raw
     def _GET_raw(self, path, auth: AuthBase) -> Tuple[bytes, CachingMeta]:
-        return self._common_api._session.get(
-            self._common_api._base_url + path, auth=auth
+        return self._session.get(
+            self._base_url + path, auth=auth
         )
 
     @authenticated_json
     def _POST_raw(self, path: str, auth: AuthBase, data: bytes = None):
-        return self._common_api._session.post(
-            self._common_api._base_url + path, data=data, auth=auth
+        return self._session.post(
+            self._base_url + path, data=data, auth=auth
         )
 
     def GET(self, path: str, meta: CachingMeta = None):
@@ -226,26 +307,3 @@ class BaseAPI:
                 return self._GET_raw(path)
             else:
                 return None, new_meta
-
-    def _build_path(
-        self,
-        id: Union[
-            ModelId, InstanceId, SampleId, SampleDatumId, SampleLableId, DescriptorId
-        ],
-    ):
-        path = "/api"
-
-        if isinstance(id, ModelId):
-            path = path + f"/model/{id.model_uuid.hex}"
-        if isinstance(id, InstanceId):
-            path = path + f"/instance/{id.instance_uuid.hex}"
-        if isinstance(id, DescriptorId):
-            path = path + f"/descriptor/{id.descriptor_uuid.hex}"
-        if isinstance(id, SampleId):
-            path = path + f"/sample/{id.sample_uuid.hex}"
-        if isinstance(id, SampleDatumId):
-            path = path + f"/data/{id.sample_datum_uuid.hex}"
-        if isinstance(id, SampleLableId):
-            path = path + f"/label/{id.sample_label_uuid.hex}"
-
-        return path
