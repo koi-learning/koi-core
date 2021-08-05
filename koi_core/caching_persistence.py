@@ -57,7 +57,7 @@ class CachingPersistence:
                 keyDict = dict()
                 for indexkey, indexVal in val.items():
                     if objectVal[0].cachingStrategy.shouldPersist(
-                        objectVal[0], key, indexVal[1]
+                        type(objectVal[0]), key, indexVal[1]
                     ):
                         keyDict[indexkey] = indexVal
                 if len(keyDict) > 0:

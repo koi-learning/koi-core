@@ -49,8 +49,8 @@ def test_training(api_mock):
 def test_persistive_caching(api_mock):
     persistence = io.BytesIO()
     run_all_models(persistence)
-    api_calls = api_mock.call_count
-    api_mock.reset_mock()
+    api_calls = api_mock.requests_mock.call_count
+    api_mock.requests_mock.reset_mock()
 
     assert persistence.tell() > 0  # check that we actually persitified something
 
@@ -58,13 +58,13 @@ def test_persistive_caching(api_mock):
     persistence.truncate()  # note we reset the persitive file here
     run_all_models(persistence)
     assert (
-        api_mock.call_count == api_calls
+        api_mock.requests_mock.call_count == api_calls
     )  # check that the second iteration still calls the api
-    api_mock.reset_mock()
+    api_mock.requests_mock.reset_mock()
 
     persistence.seek(0)
     run_all_models(persistence)
     assert (
-        api_mock.call_count < api_calls
+        api_mock.requests_mock.call_count < api_calls
     )  # check that the this iteration calls the api less often
-    api_mock.reset_mock()
+    api_mock.requests_mock.reset_mock()

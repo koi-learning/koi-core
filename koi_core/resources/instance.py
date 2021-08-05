@@ -13,7 +13,7 @@
 # GNU Lesser General Public License is distributed along with this
 # software and can be found at http://www.gnu.org/licenses/lgpl.html
 
-from koi_core.caching import cache
+from koi_core.caching import cache, offlineFeature
 from koi_core.resources.model import Model
 from koi_core.resources.ids import InstanceId, ModelId, SampleId, DescriptorId
 from koi_core.resources.sample_instance_util import InstanceDescriptorAccessor, InstanceParameterAccessor
@@ -66,6 +66,7 @@ class DescriptorProxy(Descriptor):
 
     @property
     @cache
+    @offlineFeature
     def _basic_fields(self, meta) -> DescriptorBasicFields:
         return self.pool.api.instances.get_descriptor(self.id, meta)
 
@@ -89,6 +90,7 @@ class DescriptorProxy(Descriptor):
 
     @property
     @cache
+    @offlineFeature
     def raw(self, meta) -> bytes:
         return self.pool.api.instances.get_descriptor_data(self.id, meta)
 
@@ -192,6 +194,7 @@ class InstanceBasicFields:
 class InstanceProxy(Instance):
     @property
     @cache
+    @offlineFeature
     def _basic_fields(self, meta) -> InstanceBasicFields:
         return self.pool.api.instances.get_instance(self.id, meta)
 
@@ -215,6 +218,7 @@ class InstanceProxy(Instance):
 
     @property
     @cache
+    @offlineFeature
     def training_data(self, meta) -> bytes:
         t_dat = None
         new_meta = None
@@ -251,6 +255,7 @@ class InstanceProxy(Instance):
 
     @property
     @cache
+    @offlineFeature
     def __get_descriptors(self, meta) -> List[DescriptorId]:
         return self.pool.api.instances.get_descriptors(self.id)
 
@@ -264,10 +269,12 @@ class InstanceProxy(Instance):
         descriptor.raw = raw
 
     @cache
+    @offlineFeature
     def _get_available_parameters(self, meta):
         return self.pool.api.models.get_model_parameters(ModelId(self.id.model_uuid), meta)
 
     @cache
+    @offlineFeature
     def _get_parameter_values(self, meta):
         return self.pool.api.instances.get_parameters(self.id, meta)
 

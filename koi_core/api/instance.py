@@ -49,54 +49,57 @@ def _encode_instance_descriptor(descriptor: DescriptorBasicFields):
     return _encode(descriptor, DescriptorBasicFields, _instance_descriptor_mapping)
 
 
-class APIInstances(BaseAPI):
+class APIInstances:
+    def __init__(self, base: BaseAPI):
+        self.base = base
+
     def get_instances(self, id: ModelId):
-        data, meta = self._GET(self._build_path(id) + "/instance")
+        data, meta = self.base._GET(self.base._build_path(id) + "/instance")
         return (
             [InstanceId(id=id, instance_uuid=UUID(d["instance_uuid"])) for d in data],
             meta,
         )
 
     def new_instance(self, id: ModelId):
-        data, meta = self._POST(self._build_path(id) + "/instance", data={})
+        data, meta = self.base._POST(self.base._build_path(id) + "/instance", data={})
         return (
             InstanceId(id=id, instance_uuid=UUID(data["instance_uuid"])),
             meta,
         )
 
     def get_instance(self, id: InstanceId, meta: CachingMeta = None):
-        path = self._build_path(id)
+        path = self.base._build_path(id)
         if meta is None:
-            return _parse_instance(self._GET(path))
+            return _parse_instance(self.base._GET(path))
         else:
-            new_meta = self._HEAD(path)
+            new_meta = self.base._HEAD(path)
             if new_meta != meta:
-                return _parse_instance(self._GET(path))
+                return _parse_instance(self.base._GET(path))
             else:
                 return None, new_meta
 
     def update_instance(self, id: InstanceId, update: InstanceBasicFields):
-        self._PUT(self._build_path(id), data=_encode_instance(update))
+        self.base._PUT(self.base._build_path(id), data=_encode_instance(update))
 
     def get_instance_inference_data(self, id: InstanceId, meta: CachingMeta = None):
-        path = self._build_path(id) + "/inference"
-        return self.GET_RAW(path, meta)
+        path = self.base._build_path(id) + "/inference"
+        return self.base.GET_RAW(path, meta)
 
     def set_instance_inference_data(self, id: InstanceId, data: bytes):
-        self._POST_raw(self._build_path(id) + "/inference", data=data)
+        self.base._POST_raw(self.base._build_path(id) + "/inference", data=data)
 
     def get_instance_training_data(self, id: InstanceId, meta: CachingMeta):
-        path = self._build_path(id) + "/training"
-        return self.GET_RAW(path, meta)
+        path = self.base._build_path(id) + "/training"
+        return self.base.GET_RAW(path, meta)
 
     def set_instance_training_data(self, id: InstanceId, data: bytes):
-        self._POST_raw(self._build_path(id) + "/training", data=data)
+        self.base._POST_raw(self.base._build_path(id) + "/training", data=data)
 
     # endregion
 
     # region descriptor
     def get_descriptors(self, id: InstanceId, meta: CachingMeta = None):
-        data, meta = self._GET(self._build_path(id) + "/descriptor")
+        data, meta = self.base._GET(self.base._build_path(id) + "/descriptor")
         return (
             [
                 DescriptorId(id=id, descriptor_uuid=UUID(d["descriptor_uuid"]))
@@ -106,44 +109,50 @@ class APIInstances(BaseAPI):
         )
 
     def new_descriptor(self, id: InstanceId):
-        data, meta = self._POST(self._build_path(id) + "/descriptor", data={})
+        data, meta = self.base._POST(self.base._build_path(id) + "/descriptor", data={})
         return (
             DescriptorId(id=id, descriptor_uuid=UUID(data["descriptor_uuid"])),
             meta,
         )
 
     def get_descriptor(self, id: DescriptorId, meta: CachingMeta = None):
-        path = self._build_path(id)
+        path = self.base._build_path(id)
         if meta is None:
-            return _parse_instance_descriptor(self._GET(path))
+            return _parse_instance_descriptor(self.base._GET(path))
         else:
-            new_meta = self._HEAD(path)
+            new_meta = self.base._HEAD(path)
             if new_meta != meta:
-                return _parse_instance_descriptor(self._GET(path))
+                return _parse_instance_descriptor(self.base._GET(path))
             else:
                 return None, new_meta
 
     def update_descriptor(self, id: DescriptorId, update: DescriptorBasicFields):
-        self._PUT(self._build_path(id), data=_encode_instance_descriptor(update))
+        self.base._PUT(
+            self.base._build_path(id), data=_encode_instance_descriptor(update)
+        )
 
     def get_descriptor_data(self, id: DescriptorId, meta: CachingMeta = None):
-        path = self._build_path(id) + "/file"
-        return self.GET_RAW(path, meta)
+        path = self.base._build_path(id) + "/file"
+        return self.base.GET_RAW(path, meta)
 
     def set_descriptor_data(self, id: DescriptorId, data: bytes):
-        self._POST_raw(self._build_path(id) + "/file", data=data)
+        self.base._POST_raw(self.base._build_path(id) + "/file", data=data)
 
     def get_parameters(self, id: InstanceId, meta: CachingMeta = None):
-        path = self._build_path(id) + "/parameter"
-        return self.GET(path, meta)
+        path = self.base._build_path(id) + "/parameter"
+        return self.base.GET(path, meta)
 
     def update_parameter(self, id: InstanceId, parameter):
-        path = self._build_path(id) + "/parameter"
-        self._POST(path, data=parameter)
+        path = self.base._build_path(id) + "/parameter"
+        self.base._POST(path, data=parameter)
 
     def merge_instances(self, id: InstanceId, merge: Iterable):
-        path = self._build_path(id) + "/merge"
+        path = self.base._build_path(id) + "/merge"
 
-        json_object = {"instance_uuid": [merge_instance.id.instance_uuid.hex for merge_instance in merge]}
+        json_object = {
+            "instance_uuid": [
+                merge_instance.id.instance_uuid.hex for merge_instance in merge
+            ]
+        }
 
-        self._POST(path, data=json_object)
+        self.base._POST(path, data=json_object)

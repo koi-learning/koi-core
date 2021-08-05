@@ -14,7 +14,7 @@
 # software and can be found at http://www.gnu.org/licenses/lgpl.html
 
 from koi_core.resources.ids import InstanceId, ModelId, SampleId
-from koi_core.caching import indexedCache, setIndexedCache
+from koi_core.caching import cache, indexedCache, offlineFeature, setIndexedCache
 from koi_core.caching_strategy import ExpireCachingStrategy, LocalOnlyCachingStrategy
 
 from typing import Iterable
@@ -63,14 +63,21 @@ class LocalOnlyObjectPool:
 class APIObjectPool:
     cachingStrategy = ExpireCachingStrategy()
     api: API
+
     @property
-    def id(self): return hash("APIObjectPool"+self.api._base_url)
+    def id(self):
+        return hash("APIObjectPool" + self.api._base_url)
 
     def __init__(self, api: API) -> None:
         self.api = api
 
+    @cache
+    @offlineFeature
+    def _get_models(self, meta):
+        return self.api.models.get_models(), meta
+
     def get_all_models(self) -> Iterable[Model]:
-        models, _ = self.api.models.get_models()
+        models, _ = self._get_models()
         return (self.model(id) for id in models)
 
     @indexedCache

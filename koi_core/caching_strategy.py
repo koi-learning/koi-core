@@ -17,29 +17,32 @@ from datetime import datetime
 
 
 class CachingStrategy:
-    def isValid(self, proxy, key, meta):
+    def isValid(self, proxy_cls, key, meta):
         ...
 
-    def shouldPersist(self, proxy, key, meta):
+    def shouldPersist(self, proxy_cls, key, meta):
         ...
 
 
 class ExpireCachingStrategy:
-    def isValid(self, proxy, key, meta):
+    def isValid(self, proxy_cls, key, meta):
         now = datetime.utcnow()
 
         # Cache all PoolObjects
-        t = type(proxy).__name__
+        t = proxy_cls.__name__
         if t in ["LocalOnlyObjectPool", "APIObjectPool"]:
-            return True
+            if key in ["_get_models"]:
+                return False
+            else:
+                return True
 
         if meta is None or now >= meta.expires:
             return False
         else:
             return True
 
-    def shouldPersist(self, proxy, key, meta):
-        t = type(proxy).__name__
+    def shouldPersist(self, proxy_cls, key, meta):
+        t = proxy_cls.__name__
 
         if t == "ModelProxy":
             if key in [
@@ -48,11 +51,20 @@ class ExpireCachingStrategy:
                 "request_plugin",
                 "visual_plugin",
                 "_instance_ids",
+                "parameters",
             ]:
                 return True
             return False
         if t == "InstanceProxy":
-            if key in ["_basic_fields", "training_data", "inference_data", "_samples"]:
+            if key in [
+                "_basic_fields",
+                "training_data",
+                "inference_data",
+                "_samples",
+                "_get_parameter_values",
+                "__get_descriptors",
+                "_get_available_parameters",
+            ]:
                 return True
             return False
         if t == "DescriptorProxy":
@@ -68,13 +80,15 @@ class ExpireCachingStrategy:
                 return True
             return False
         if t in ["LocalOnlyObjectPool", "APIObjectPool"]:
+            if key in ["_get_models"]:
+                return True
             return False
         return False
 
 
 class LocalOnlyCachingStrategy:
-    def isValid(self, proxy, key, meta):
+    def isValid(self, proxy_cls, key, meta):
         return True
 
-    def shouldPersist(self, proxy, key, meta):
+    def shouldPersist(self, proxy_cls, key, meta):
         return False
