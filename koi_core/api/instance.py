@@ -49,7 +49,7 @@ def _encode_instance_descriptor(descriptor: DescriptorBasicFields):
     return _encode(descriptor, DescriptorBasicFields, _instance_descriptor_mapping)
 
 
-class APIInstances(BaseAPI):
+class APIInstances:
     def __init__(self, base: BaseAPI):
         self.base = base
 

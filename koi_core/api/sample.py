@@ -48,7 +48,7 @@ def _encode_sample_datum(model: SampleDatumBasicFields):
     return _encode(model, SampleDatumBasicFields, _sample_datum_mapping)
 
 
-class APISamples(BaseAPI):
+class APISamples:
     def __init__(self, base: BaseAPI):
         self.base = base
 

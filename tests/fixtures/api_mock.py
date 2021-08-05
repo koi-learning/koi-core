@@ -252,6 +252,50 @@ def api_mock(testing_model):
                 exc=requests.exceptions.ConnectTimeout,
             )
 
+        def set_connectionError(self):
+            if self.requests_mock:
+                self.requests_mock.stop()
+            self.requests_mock = requests_mock.MockerCore()
+            self.requests_mock.start()
+
+            self.requests_mock.register_uri(
+                "POST",
+                "testing://base/api/login",
+                exc=requests.exceptions.ConnectionError,
+            )
+            self.requests_mock.register_uri(
+                "GET",
+                "testing://base/api/model",
+                exc=requests.exceptions.ConnectionError,
+            )
+            self.requests_mock.register_uri(
+                "GET",
+                re.compile(r"testing://base/api/model/(\d*)/parameter"),
+                exc=requests.exceptions.ConnectionError,
+            )
+
+            self.requests_mock.register_uri(
+                "GET",
+                re.compile(r"testing://base/api/model/(\d*)/code"),
+                exc=requests.exceptions.ConnectionError,
+            )
+
+            self.requests_mock.register_uri(
+                "GET",
+                re.compile(r"testing://base/api/model/(\d*)/instance"),
+                exc=requests.exceptions.ConnectionError,
+            )
+            self.requests_mock.register_uri(
+                "GET",
+                re.compile(r"testing://base/api/model/(\d*)/instance/(\d*)/parameter"),
+                exc=requests.exceptions.ConnectionError,
+            )
+            self.requests_mock.register_uri(
+                "POST",
+                re.compile(r"testing://base/api/model/(\d*)/instance/(\d*)/parameter"),
+                exc=requests.exceptions.ConnectionError,
+            )
+
     yield ApiMock()
 
 

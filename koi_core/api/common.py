@@ -78,7 +78,7 @@ def common_authenticated(self: "BaseAPI", request_func, *args, **kwargs):
         response = request_func(
             self, *args, auth=BearerAuth(self._token), **kwargs
         )
-    except requests.exceptions.Timeout:
+    except (requests.exceptions.Timeout, requests.exceptions.ConnectionError):
         self.online = False
         raise KoiApiOfflineException()
 
@@ -242,7 +242,7 @@ class RequestsAPI(BaseAPI):
             if not response.status_code == 200:
                 raise ValueError("invalid login")
             self._token = response.json()["token"]
-        except requests.exceptions.Timeout:
+        except (requests.exceptions.Timeout, requests.exceptions.ConnectionError):
             self.online = False
             raise KoiApiOfflineException()
 

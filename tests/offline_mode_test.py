@@ -26,17 +26,22 @@ import requests
 import inspect
 
 
-def test_offline_mocking(api_mock):
+@pytest.mark.parametrize("offlineOrConnectionError", [False, True])
+def test_offline_mocking(offlineOrConnectionError, api_mock):
     # check if the api mocking works
     model = requests.get("testing://base/api/model").json()
-    api_mock.set_offline()
+    if offlineOrConnectionError:
+        api_mock.set_offline()
+    else:
+        api_mock.set_connectionError()
     with pytest.raises(Exception):
         requests.get("testing://base/api/model")
     api_mock.set_online()
     assert requests.get("testing://base/api/model").json() == model
 
 
-def test_offline_detection(api_mock):
+@pytest.mark.parametrize("offlineOrConnectionError", [False, True])
+def test_offline_detection(offlineOrConnectionError, api_mock):
     koi_core.init()
     pool = koi_core.create_api_object_pool(
         host="testing://base", username="user", password="password"
@@ -44,19 +49,22 @@ def test_offline_detection(api_mock):
 
     # check that the api reports as online and continous to do so after authentication
     assert pool.api.online == True
-    pool.api.authenticate()
     pool.get_all_models()  # make sure the models are cached
     assert pool.api.online == True
 
     # check if the api detects the offline server when doing something
-    api_mock.set_offline()
+    if offlineOrConnectionError:
+        api_mock.set_offline()
+    else:
+        api_mock.set_connectionError()
     pool.get_all_models()  # just do something, so that the API can detect the absence of the server
     assert pool.api.online == False
 
     koi_core.deinit()
 
 
-def test_offline_authentication(api_mock):
+@pytest.mark.parametrize("offlineOrConnectionError", [False, True])
+def test_offline_authentication(offlineOrConnectionError, api_mock):
     koi_core.init()
     pool = koi_core.create_api_object_pool(
         host="testing://base", username="user", password="password"
@@ -66,7 +74,10 @@ def test_offline_authentication(api_mock):
     assert pool.api.online == True
 
     # check if the api detects the offline server when trying to authenticate
-    api_mock.set_offline()
+    if offlineOrConnectionError:
+        api_mock.set_offline()
+    else:
+        api_mock.set_connectionError()
     with pytest.raises(KoiApiOfflineException):
         pool.api.authenticate()
     assert pool.api.online == False
@@ -74,7 +85,8 @@ def test_offline_authentication(api_mock):
     koi_core.deinit()
 
 
-def test_offline_model_inference(api_mock):
+@pytest.mark.parametrize("offlineOrConnectionError", [False, True])
+def test_offline_model_inference(offlineOrConnectionError, api_mock):
     persistence = io.BytesIO()
 
     koi_core.init()
@@ -93,7 +105,10 @@ def test_offline_model_inference(api_mock):
     koi_core.control.infer(instance, [], dev=True)
     koi_core.deinit()
 
-    api_mock.set_offline()
+    if offlineOrConnectionError:
+        api_mock.set_offline()
+    else:
+        api_mock.set_connectionError()
     persistence.seek(0)
     koi_core.init()
     pool = koi_core.create_api_object_pool(
@@ -152,7 +167,8 @@ def test_offline_features_are_persistived():
     pass
 
 
-def test_offline_api(api_mock):
+@pytest.mark.parametrize("offlineOrConnectionError", [False, True])
+def test_offline_api(offlineOrConnectionError, api_mock):
     persistence = io.BytesIO()
 
     koi_core.init()
@@ -183,9 +199,14 @@ def test_offline_api(api_mock):
     )
     koi_core.control.infer(instance, [], dev=True)
     koi_core.deinit()
-    assert api_mock.requests_mock.call_count==0, f"The Offline API should not make any HTTP Request"
+    assert (
+        api_mock.requests_mock.call_count == 0
+    ), f"The Offline API should not make any HTTP Request"
 
-    api_mock.set_offline()
+    if offlineOrConnectionError:
+        api_mock.set_offline()
+    else:
+        api_mock.set_connectionError()
     persistence.seek(0)
     koi_core.init()
     pool = koi_core.create_offline_object_pool(persistance_file=persistence)
