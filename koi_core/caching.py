@@ -27,13 +27,13 @@ class CachingMeta:
     etag: str = None
 
     def __eq__(self, other):
-        if other is None:
-            return False
+        if isinstance(other, self):
+            if self.etag is not None and other.etag is not None:
+                return self.etag == other.etag
 
-        if self.etag is not None and other.etag is not None:
-            return self.etag == other.etag
+            return self.last_modified == other.last_modified
 
-        return self.last_modified == other.last_modified
+        return False
 
 
 CachingDict = Dict[str, Dict[Any, Tuple[Any, CachingMeta]]]
