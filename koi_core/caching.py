@@ -27,7 +27,7 @@ class CachingMeta:
     etag: str = None
 
     def __eq__(self, other):
-        if isinstance(other, self):
+        if isinstance(other, CachingMeta):
             if self.etag is not None and other.etag is not None:
                 return self.etag == other.etag
 
