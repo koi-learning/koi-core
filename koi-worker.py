@@ -115,7 +115,7 @@ if __name__ == "__main__":
         "-t",
         "--sleep-retry",
         type=int,
-        default=10,
+        default=60,
         help="Number of seconds to wait before a retry",
     )
 
@@ -143,7 +143,6 @@ if __name__ == "__main__":
 
     # intialize retry counter
     retries = opt.retries
-    sleep_time = opt.sleep_time
 
     # connect using the credentials
     logging.info("connecting to %s", opt.server)
@@ -236,8 +235,8 @@ if __name__ == "__main__":
                 raise ex
 
             retries -= 1
-            logging.error("koi api is offline, retrying in %d seconds", sleep_time)
-            sleep(sleep_time)
+            logging.error("koi api is offline, retrying in %d seconds", opt.sleep_retry)
+            sleep(opt.sleep_retry)
 
             # set the online flag an try to athenticate
             pool.api.reconnect()
