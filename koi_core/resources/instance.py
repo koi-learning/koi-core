@@ -218,7 +218,6 @@ class InstanceProxy(Instance):
 
     @property
     @cache
-    @offlineFeature
     def training_data(self, meta) -> bytes:
         t_dat = None
         new_meta = None
@@ -235,6 +234,7 @@ class InstanceProxy(Instance):
 
     @property
     @cache
+    @offlineFeature
     def inference_data(self, meta) -> bytes:
         i_dat = None
         new_meta = None

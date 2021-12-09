@@ -146,11 +146,15 @@ def _encode(object, cls, mapping):
 
 
 class BaseAPI:
-    """This class will always raise a KoiOfflineException. I.e. this class will respond like a normal API which is always offline"""
+    """This class will always raise a KoiOfflineException. I.e. this class will respond
+    like a normal API which is always offline"""
 
     def __init__(self):
         self._base_url = "offline://"
         self.online = False
+
+    def reconnect(self):
+        raise KoiApiOfflineException()
 
     def authenticate(self):
         raise KoiApiOfflineException()
@@ -227,6 +231,11 @@ class RequestsAPI(BaseAPI):
         self._password = password
         self._session = requests.Session()
         self.online = True
+
+    def reconnect(self):
+        if not self.online:
+            self.online = True
+            self.authenticate()
 
     def authenticate(self):
         if not self.online:

@@ -12,10 +12,8 @@
 # Lesser General Public License for more details. A copy of the
 # GNU Lesser General Public License is distributed along with this
 # software and can be found at http://www.gnu.org/licenses/lgpl.html
-from koi_core.api.common import BaseAPI, RequestsAPI
-import requests
-from multiprocessing import Lock
 
+from koi_core.api.common import BaseAPI, RequestsAPI
 from .model import APIModels
 from .instance import APIInstances
 from .sample import APISamples
@@ -28,6 +26,7 @@ class API(RequestsAPI):
         self.models = APIModels(self)
         self.instances = APIInstances(self)
         self.samples = APISamples(self)
+
 
 class OfflineAPI(BaseAPI):
     def __init__(self):
