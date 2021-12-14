@@ -23,6 +23,10 @@ from koi_core.resources.ids import (
     SampleId,
     SampleLableId,
     DescriptorId,
+    UserId,
+    GeneralRoleId,
+    ModelRoleId,
+    InstanceRoleId,
 )
 from koi_core.caching import CachingMeta
 import requests
@@ -141,7 +145,8 @@ def _parse(response, cls, mapping):
 def _encode(object, cls, mapping):
     ret = dict()
     for key in cls.__annotations__:
-        ret[mapping[key]] = getattr(object, key)
+        if key in mapping:
+            ret[mapping[key]] = getattr(object, key)
     return ret
 
 
@@ -197,16 +202,24 @@ class BaseAPI:
     def _build_path(
         self,
         id: Union[
+            UserId,
             ModelId,
             InstanceId,
             SampleId,
             SampleDatumId,
             SampleLableId,
             DescriptorId,
-        ],
+        ] = None,
     ):
         path = "/api"
-
+        if isinstance(id, GeneralRoleId):
+            path = path + f"/roles/general{id.role_uuid}"
+        if isinstance(id, ModelRoleId):
+            path = path + f"/roles/model{id.model_uuid}"
+        if isinstance(id, InstanceRoleId):
+            path = path + f"/roles/instance{id.instance_uuid}"
+        if isinstance(id, UserId):
+            path = path + f"/user/{id.user_uuid.hex}"
         if isinstance(id, ModelId):
             path = path + f"/model/{id.model_uuid.hex}"
         if isinstance(id, InstanceId):
@@ -316,3 +329,16 @@ class RequestsAPI(BaseAPI):
                 return self._GET_raw(path)
             else:
                 return None, new_meta
+
+    def GET_paged(self, path: str, page_size=50):
+        cont = True
+        collection = []
+        page_offset = 0
+        while cont:
+            params = {"page_size": page_size, "page_offset": page_offset}
+            collection_part, meta = self._GET(path, parameter=params)
+            collection.extend(collection_part)
+            page_offset += len(collection_part)
+            if len(collection_part) < page_size:
+                cont = False
+        return collection, meta
