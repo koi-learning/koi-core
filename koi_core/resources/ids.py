@@ -16,6 +16,71 @@
 from uuid import UUID
 
 
+class AccessId:
+    access_uuid: UUID
+
+    def __init__(self, access_uuid: UUID = None, id=None) -> None:
+        self.access_uuid = access_uuid if access_uuid else id.access_uuid
+
+    def __hash__(self):
+        return hash(self.access_uuid)
+
+    def __eq__(self, other):
+        return self.access_uuid == other.access_uuid
+
+
+class GeneralRoleId:
+    role_uuid: UUID
+
+    def __init__(self, role_uuid: UUID = None, id=None) -> None:
+        self.role_uuid = role_uuid if role_uuid else id.role_uuid
+
+    def __hash__(self):
+        return hash(self.role_uuid)
+
+    def __eq__(self, other):
+        return self.role_uuid == other.role_uuid
+
+
+class ModelRoleId:
+    role_uuid: UUID
+
+    def __init__(self, role_uuid: UUID = None, id=None) -> None:
+        self.role_uuid = role_uuid if role_uuid else id.role_uuid
+
+    def __hash__(self):
+        return hash(self.role_uuid)
+
+    def __eq__(self, other):
+        return self.role_uuid == other.role_uuid
+
+
+class InstanceRoleId:
+    role_uuid: UUID
+
+    def __init__(self, role_uuid: UUID = None, id=None) -> None:
+        self.role_uuid = role_uuid if role_uuid else id.role_uuid
+
+    def __hash__(self):
+        return hash(self.role_uuid)
+
+    def __eq__(self, other):
+        return self.role_uuid == other.role_uuid
+
+
+class UserId:
+    user_uuid: UUID
+
+    def __init__(self, user_uuid: UUID = None, id=None) -> None:
+        self.user_uuid = user_uuid if user_uuid else id.user_uuid
+
+    def __hash__(self):
+        return hash(self.user_uuid)
+
+    def __eq__(self, other):
+        return self.user_uuid == other.user_uuid
+
+
 class ModelId:
     model_uuid: UUID
 
