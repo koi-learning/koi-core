@@ -17,8 +17,10 @@ import pytest
 
 
 def test_instance_parameter(api_mock):
+    koi.init()
+
     # create pool and get the first instance of the first model
-    pool = koi.create_api_object_pool(host="testing://base", username="user", password="password")
+    pool = koi.create_api_object_pool(host="http://base", username="user", password="password")
     model = list(pool.get_all_models())[0]
     inst = list(model.instances)[0]
 
