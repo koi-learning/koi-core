@@ -13,7 +13,7 @@
 # GNU Lesser General Public License is distributed along with this
 # software and can be found at http://www.gnu.org/licenses/lgpl.html
 
-from koi_core.resources.ids import InstanceId, ModelId, SampleId
+from koi_core.resources.ids import GeneralRoleId, ModelRoleId, InstanceRoleId, InstanceId, ModelId, SampleId, UserId
 from koi_core.caching import cache, indexedCache, offlineFeature, setIndexedCache
 from koi_core.caching_strategy import ExpireCachingStrategy, LocalOnlyCachingStrategy
 
@@ -22,6 +22,8 @@ from typing import Iterable
 from koi_core.resources.instance import Instance, InstanceProxy, LocalInstance
 from koi_core.resources.model import LocalModel, Model, ModelProxy
 from koi_core.resources.sample import LocalSample, Sample, SampleProxy
+from koi_core.resources.user import User, UserProxy
+from koi_core.resources.role import GeneralRole, ModelRole, InstanceRole, GeneralRoleProxy, ModelRoleProxy, InstanceRoleProxy
 from koi_core.api import API
 
 
@@ -74,11 +76,59 @@ class APIObjectPool:
     @cache
     @offlineFeature
     def _get_models(self, meta):
-        return self.api.models.get_models(), meta
+        return self.api.models.get_models(meta)
 
     def get_all_models(self) -> Iterable[Model]:
-        models, _ = self._get_models()
+        models = self._get_models()
         return (self.model(id) for id in models)
+
+    @cache
+    def _get_users(self, meta):
+        return self.api.users.get_users(meta)
+
+    def get_all_users(self) -> Iterable[User]:
+        users = self._get_users()
+        return (self.user(id) for id in users)
+
+    @cache
+    def _get_general_roles(self, meta):
+        return self.api.roles.get_general_roles(meta)
+
+    def get_all_general_roles(self) -> Iterable[GeneralRole]:
+        roles = self._get_general_roles()
+        return (self.generalrole(id) for id in roles)
+
+    @cache
+    def _get_model_roles(self, meta):
+        return self.api.roles.get_model_roles(meta)
+
+    def get_all_model_roles(self) -> Iterable[ModelRole]:
+        roles = self._get_model_roles()
+        return (self.modelrole(id) for id in roles)
+
+    @cache
+    def _get_instance_roles(self, meta):
+        return self.api.roles.get_instance_roles(meta)
+
+    def get_all_instance_roles(self) -> Iterable[InstanceRole]:
+        roles = self._get_instance_roles()
+        return (self.instancerole(id) for id in roles)
+
+    @indexedCache
+    def generalrole(self, id: GeneralRoleId, meta) -> GeneralRole:
+        return GeneralRoleProxy(self, id), meta
+
+    @indexedCache
+    def modelrole(self, id: ModelRoleId, meta) -> ModelRole:
+        return ModelRoleProxy(self, id), meta
+
+    @indexedCache
+    def instancerole(self, id: InstanceRoleId, meta) -> InstanceRole:
+        return InstanceRoleProxy(self, id), meta
+
+    @indexedCache
+    def user(self, id: UserId, meta) -> User:
+        return UserProxy(self, id), meta
 
     @indexedCache
     def model(self, id: ModelId, meta) -> Model:
