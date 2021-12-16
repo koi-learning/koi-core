@@ -23,7 +23,6 @@ if TYPE_CHECKING:
 
 
 class GeneralRole:
-    role_id: GeneralRoleId
     name: str
     description: str
     grant_access: bool
@@ -73,7 +72,6 @@ class GeneralRoleProxy(GeneralRole):
 
 
 class ModelRole:
-    role_id: ModelRoleId
     name: str
     description: str
     see_model: bool
@@ -125,7 +123,6 @@ class ModelRoleProxy(ModelRole):
 
 
 class InstanceRole:
-    role_id: InstanceRoleId
     name: str
     description: str
     see_instance: bool
