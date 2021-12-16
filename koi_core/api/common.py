@@ -17,6 +17,9 @@ from multiprocessing import Lock
 from koi_core.exceptions import KoiApiOfflineException
 from requests.auth import AuthBase
 from koi_core.resources.ids import (
+    GeneralAccessId,
+    ModelAccessId,
+    InstanceAccessId,
     InstanceId,
     ModelId,
     SampleDatumId,
@@ -212,6 +215,8 @@ class BaseAPI:
         ] = None,
     ):
         path = "/api"
+        if isinstance(id, GeneralAccessId):
+            path = path + f"/access/{id.access_uuid}"
         if isinstance(id, GeneralRoleId):
             path = path + f"/roles/general{id.role_uuid}"
         if isinstance(id, ModelRoleId):
@@ -222,8 +227,12 @@ class BaseAPI:
             path = path + f"/user/{id.user_uuid.hex}"
         if isinstance(id, ModelId):
             path = path + f"/model/{id.model_uuid.hex}"
+        if isinstance(id, ModelAccessId):
+            path = path + f"/access/{id.access_uuid}"
         if isinstance(id, InstanceId):
             path = path + f"/instance/{id.instance_uuid.hex}"
+        if isinstance(id, InstanceAccessId):
+            path = path + f"/access/{id.access_uuid}"
         if isinstance(id, DescriptorId):
             path = path + f"/descriptor/{id.descriptor_uuid.hex}"
         if isinstance(id, SampleId):
