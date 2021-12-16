@@ -25,7 +25,7 @@ from .common_data import data_code
 from .handlers_model import models, model_parameter, model_code
 from .handlers_instance import instance_parameter, instance_parameter_set, instances, instance
 from .handlers_user import users, user, login
-from .handlers_roles import roles, role
+from .handlers_roles import roles, role, access_general, access_model, access_instance
 
 # monkey patch JSONEncoder to encode UUIDs as well.
 JSONEncoder_olddefault = JSONEncoder.default
@@ -59,32 +59,35 @@ def api_mock(testing_model):
             self.requests_mock.register_uri("POST", "http://base/api/login", json=login)
             self.requests_mock.register_uri("GET", "http://base/api/model", json=models)
             self.requests_mock.register_uri(
-                "GET", re.compile(r"http://base/api/model/(\d*)/parameter"), json=model_parameter,
+                "GET", re.compile(r"http://base/api/model/([0-9,a-f,-]*)/parameter"), json=model_parameter,
             )
 
             self.requests_mock.register_uri(
-                "GET", re.compile(r"http://base/api/model/(\d*)/code"), content=model_code,
+                "GET", re.compile(r"http://base/api/model/([0-9,a-f,-]*)/code"), content=model_code,
             )
 
             self.requests_mock.register_uri(
-                "GET", re.compile(r"http://base/api/model/(\d*)/instance"), json=instances,
+                "GET", re.compile(r"http://base/api/model/([0-9,a-f,-]*)/instance"), json=instances,
             )
             self.requests_mock.register_uri(
-                "GET", re.compile(r"http://base/api/model/(\d*)/instance/(\d*)"), json=instance,
+                "GET", re.compile(r"http://base/api/model/([0-9,a-f,-]*)/instance/([0-9,a-f,-]*)"), json=instance,
             )
             self.requests_mock.register_uri(
-                "GET", re.compile(r"http://base/api/model/(\d*)/instance/(\d*)/parameter"), json=instance_parameter,
+                "GET", re.compile(r"http://base/api/model/([0-9,a-f,-]*)/instance/([0-9,a-f,-]*)/parameter"), json=instance_parameter,
             )
             self.requests_mock.register_uri(
-                "POST", re.compile(r"http://base/api/model/(\d*)/instance/(\d*)/parameter"), json=instance_parameter_set,
+                "POST", re.compile(r"http://base/api/model/([0-9,a-f,-]*)/instance/([0-9,a-f,-]*)/parameter"), json=instance_parameter_set,
             )
 
-            self.requests_mock.register_uri(ANY, re.compile(r"http://base/api/user/(\d*)"), json=user)
+            self.requests_mock.register_uri(ANY, re.compile(r"http://base/api/user/([0-9,a-f,-]*)"), json=user)
             self.requests_mock.register_uri(ANY, "http://base/api/user", json=users)
 
             self.requests_mock.register_uri(ANY, re.compile(r"http://base/api/userroles/(\w*)"), json=roles)
-            self.requests_mock.register_uri(ANY, re.compile(r"http://base/api/userroles/(\w*)/(\d*)"), json=role)
+            self.requests_mock.register_uri(ANY, re.compile(r"http://base/api/userroles/(\w*)/([0-9,a-f,-]*)"), json=role)
 
+            self.requests_mock.register_uri(ANY, re.compile("http://base/api/access"), json=access_general)
+            self.requests_mock.register_uri(ANY, "http://base/api/model/([0-9,a-f,-]*)/access", json=access_model)
+            self.requests_mock.register_uri(ANY, "http://base/api/model/([0-9,a-f,-]*)/instance/([0-9,a-f,-]*)/access", json=access_instance)
 
         def set_offline(self):
             if self.requests_mock:
@@ -99,24 +102,24 @@ def api_mock(testing_model):
                 "GET", "http://base/api/model", exc=requests.exceptions.ConnectTimeout,
             )
             self.requests_mock.register_uri(
-                "GET", re.compile(r"http://base/api/model/(\d*)/parameter"), exc=requests.exceptions.ConnectTimeout,
+                "GET", re.compile(r"http://base/api/model/([0-9,a-f,-]*)/parameter"), exc=requests.exceptions.ConnectTimeout,
             )
 
             self.requests_mock.register_uri(
-                "GET", re.compile(r"http://base/api/model/(\d*)/code"), exc=requests.exceptions.ConnectTimeout,
+                "GET", re.compile(r"http://base/api/model/([0-9,a-f,-]*)/code"), exc=requests.exceptions.ConnectTimeout,
             )
 
             self.requests_mock.register_uri(
-                "GET", re.compile(r"http://base/api/model/(\d*)/instance"), exc=requests.exceptions.ConnectTimeout,
+                "GET", re.compile(r"http://base/api/model/([0-9,a-f,-]*)/instance"), exc=requests.exceptions.ConnectTimeout,
             )
             self.requests_mock.register_uri(
                 "GET",
-                re.compile(r"http://base/api/model/(\d*)/instance/(\d*)/parameter"),
+                re.compile(r"http://base/api/model/([0-9,a-f,-]*)/instance/([0-9,a-f,-]*)/parameter"),
                 exc=requests.exceptions.ConnectTimeout,
             )
             self.requests_mock.register_uri(
                 "POST",
-                re.compile(r"http://base/api/model/(\d*)/instance/(\d*)/parameter"),
+                re.compile(r"http://base/api/model/([0-9,a-f,-]*)/instance/([0-9,a-f,-]*)/parameter"),
                 exc=requests.exceptions.ConnectTimeout,
             )
 
@@ -133,24 +136,24 @@ def api_mock(testing_model):
                 "GET", "http://base/api/model", exc=requests.exceptions.ConnectionError,
             )
             self.requests_mock.register_uri(
-                "GET", re.compile(r"http://base/api/model/(\d*)/parameter"), exc=requests.exceptions.ConnectionError,
+                "GET", re.compile(r"http://base/api/model/([0-9,a-f,-]*)/parameter"), exc=requests.exceptions.ConnectionError,
             )
 
             self.requests_mock.register_uri(
-                "GET", re.compile(r"http://base/api/model/(\d*)/code"), exc=requests.exceptions.ConnectionError,
+                "GET", re.compile(r"http://base/api/model/([0-9,a-f,-]*)/code"), exc=requests.exceptions.ConnectionError,
             )
 
             self.requests_mock.register_uri(
-                "GET", re.compile(r"http://base/api/model/(\d*)/instance"), exc=requests.exceptions.ConnectionError,
+                "GET", re.compile(r"http://base/api/model/([0-9,a-f,-]*)/instance"), exc=requests.exceptions.ConnectionError,
             )
             self.requests_mock.register_uri(
                 "GET",
-                re.compile(r"http://base/api/model/(\d*)/instance/(\d*)/parameter"),
+                re.compile(r"http://base/api/model/([0-9,a-f,-]*)/instance/([0-9,a-f,-]*)/parameter"),
                 exc=requests.exceptions.ConnectionError,
             )
             self.requests_mock.register_uri(
                 "PUT",
-                re.compile(r"http://base/api/model/(\d*)/instance/(\d*)/parameter"),
+                re.compile(r"http://base/api/model/([0-9,a-f,-]*)/instance/([0-9,a-f,-]*)/parameter"),
                 exc=requests.exceptions.ConnectionError,
             )
 

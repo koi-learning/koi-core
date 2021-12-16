@@ -14,9 +14,16 @@
 # software and can be found at http://www.gnu.org/licenses/lgpl.html
 
 import re
-from uuid import UUID
+from uuid import UUID, uuid1
 from .handlers_common import paged, cache_controlled
-from .common_data import data_roles_model, data_roles_instance, data_roles_general
+from .common_data import (
+    data_roles_model,
+    data_roles_instance,
+    data_roles_general,
+    data_access_general,
+    data_access_model,
+    data_access_instance,
+)
 
 
 @cache_controlled
@@ -36,11 +43,11 @@ def roles(request, context, page_offset, page_size):
         return
 
     context.status_code = 200
-    return data[page_offset: page_offset + page_size]
+    return data[page_offset : page_offset + page_size]
 
 
 def role(request, context):
-    match = re.search(r"http://base/api/userroles/(\w*)/(\d*)", str(request))
+    match = re.search(r"http://base/api/userroles/(\w*)/([0-9,a-f,-]*)", str(request))
     role_id = UUID(match[2])
     t = match[1]
 
@@ -68,9 +75,68 @@ def role(request, context):
         context.status_code = 200
         for role in data:
             if UUID(role["role_uuid"]) == role_id:
-                role.update(request.json)
+                role.update(request.json())
                 return role
 
     else:
         context.status_code = 405
         return {}
+
+
+def access_general(request, context):
+    match = re.search(r"http://base/api/access((/)([0-9,a-f,-]*))?", str(request))
+    access_uuid = match[3]
+    if access_uuid is not None:
+        access_uuid = UUID(access_uuid)
+
+    if request._request.method == "GET":
+        if access_uuid is None:
+            context.status_code = 200
+            return data_access_general
+        else:
+            for access in data_access_general:
+                if UUID(access["access_uuid"]) == access_uuid:
+                    context.status_code = 200
+                    return access
+    elif request._request.method == "POST" and access_uuid is None:
+        new_access = request.json()
+        new_access["access_uuid"] = str(uuid1())
+        data_access_general.append(new_access)
+        context.status_code = 200
+        return {}
+
+    elif request._request.method == "DELETE" and access_uuid is not None:
+        for access in data_access_general:
+            if UUID(access["access_uuid"]) == access_uuid:
+                data_access_general.remove(access)
+                context.status_code = 200
+                return {}
+    else:
+        context.status_code = 405
+        return {}
+
+
+def access_model(request, context):
+    match = re.search(r"http://base/api/userroles/model/([0-9,a-f,-]*)", str(request))
+    user_id = UUID(match[1])
+
+    for role in data_roles_model:
+        if UUID(role["user_uuid"]) == user_id:
+            context.status_code = 200
+            return role
+
+    context.status_code = 404
+    return {}
+
+
+def access_instance(request, context):
+    match = re.search(r"http://base/api/userroles/instance/([0-9,a-f,-]*)", str(request))
+    user_id = UUID(match[1])
+
+    for role in data_roles_instance:
+        if UUID(role["user_uuid"]) == user_id:
+            context.status_code = 200
+            return role
+
+    context.status_code = 404
+    return {}

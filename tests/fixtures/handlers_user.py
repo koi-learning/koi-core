@@ -40,7 +40,7 @@ def users(request, context, page_offset, page_size):
 
 @cache_controlled
 def user(request, context):
-    match = re.search(r"http://base/api/user/(\d*)", str(request))
+    match = re.search(r"http://base/api/user/([0-9,a-f,-]*)", str(request))
     user_id = UUID(match[1])
     user = next(filter(lambda x: UUID(x["user_uuid"]) == user_id, data_users), None)
 

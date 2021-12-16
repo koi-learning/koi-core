@@ -21,8 +21,14 @@ def test_instance_parameter(api_mock):
 
     # create pool and get the first instance of the first model
     pool = koi.create_api_object_pool(host="http://base", username="user", password="password")
-    model = list(pool.get_all_models())[0]
-    inst = list(model.instances)[0]
+
+    model = next(pool.get_all_models(), None)
+
+    assert model is not None
+
+    inst = next(model.instances, None)
+
+    assert inst is not None
 
     # get the current values of the our instance parameters
     value1 = inst.parameter["param1"]

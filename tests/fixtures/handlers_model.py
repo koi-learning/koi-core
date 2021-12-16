@@ -35,19 +35,19 @@ def models(request, context):
 
 @cache_controlled
 def model_code(request, context):
-    match = re.search(r"http://base/api/model/(\d*)/code", str(request))
+    match = re.search(r"http://base/api/model/([0-9,a-f,-]*)/code", str(request))
     model_id = UUID(match[1])
 
-    model = next((model for model in data_models if model["model_uuid"] == model_id), None)
+    model = next((model for model in data_models if UUID(model["model_uuid"]) == model_id), None)
     return data_code[model["code"]]
 
 
 @cache_controlled
 def model_parameter(request, context):
-    match = re.search(r"http://base/api/model/(\d*)/parameter", str(request))
+    match = re.search(r"http://base/api/model/([0-9,a-f,-]*)/parameter", str(request))
     model_id = UUID(match[1])
 
-    model = next((model for model in data_models if model["model_uuid"] == model_id), None)
+    model = next((model for model in data_models if UUID(model["model_uuid"]) == model_id), None)
     if model is not None:
         return model["parameter"]
     else:

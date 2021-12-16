@@ -13,7 +13,6 @@
 # GNU Lesser General Public License is distributed along with this
 # software and can be found at http://www.gnu.org/licenses/lgpl.html
 
-from uuid import UUID
 from datetime import datetime
 
 
@@ -25,18 +24,18 @@ data_models = [
         "has_visual_plugin": True,
         "model_description": "Description 0",
         "model_name": "Model 0",
-        "model_uuid": UUID("00000000-0001-1000-8000-000000000000"),
+        "model_uuid": "00000000-0001-1000-8000-000000000000",
         "code": "testing_model",
         "parameter": [
             {
-                "param_uuid": UUID("00000000-1001-1000-8000-000000000000"),
+                "param_uuid": "00000000-1001-1000-8000-000000000000",
                 "name": "param1",
                 "description": "description of param1",
                 "constraint": "",
                 "type": "int",
             },
             {
-                "param_uuid": UUID("00000000-1002-1000-8000-000000000000"),
+                "param_uuid": "00000000-1002-1000-8000-000000000000",
                 "name": "param2",
                 "description": "description of param2",
                 "constraint": "",
@@ -51,10 +50,10 @@ data_models = [
                 "has_training": True,
                 "instance_description": "Instance Description 0",
                 "instance_name": "Instance 0",
-                "instance_uuid": UUID("00000000-0002-1000-8000-000000000000"),
+                "instance_uuid": "00000000-0002-1000-8000-000000000000",
                 "parameter": [
                     {
-                        "param_uuid": UUID("00000000-1001-1000-8000-000000000000"),
+                        "param_uuid": "00000000-1001-1000-8000-000000000000",
                         "name": "param1",
                         "description": "description of param1",
                         "constraint": "",
@@ -62,7 +61,7 @@ data_models = [
                         "value": "1",
                     },
                     {
-                        "param_uuid": UUID("00000000-1002-1000-8000-000000000000"),
+                        "param_uuid": "00000000-1002-1000-8000-000000000000",
                         "name": "param2",
                         "description": "description of param2",
                         "constraint": "",
@@ -78,10 +77,10 @@ data_models = [
                 "has_training": True,
                 "instance_description": "Instance Description 1",
                 "instance_name": "Instance 1",
-                "instance_uuid": UUID("00000000-0002-1000-8000-000000000001"),
+                "instance_uuid": "00000000-0002-1000-8000-000000000001",
                 "parameter": [
                     {
-                        "param_uuid": UUID("00000000-1001-1000-8000-000000000000"),
+                        "param_uuid": "00000000-1001-1000-8000-000000000000",
                         "name": "param1",
                         "description": "description of param1",
                         "constraint": "",
@@ -89,7 +88,7 @@ data_models = [
                         "value": "10",
                     },
                     {
-                        "param_uuid": UUID("00000000-1002-1000-8000-000000000000"),
+                        "param_uuid": "00000000-1002-1000-8000-000000000000",
                         "name": "param2",
                         "description": "description of param2",
                         "constraint": "",
@@ -107,7 +106,7 @@ data_models = [
         "has_visual_plugin": True,
         "model_description": "Description 1",
         "model_name": "Model 1",
-        "model_uuid": UUID("00000000-0001-1000-8000-000000000001"),
+        "model_uuid": "00000000-0001-1000-8000-000000000001",
         "parameter": [],
         "instances": [],
     },
@@ -144,12 +143,22 @@ data_roles_general = [
         "edit_users": True,
         "edit_models": True,
         "edit_roles": True,
-     }
+    },
+    {
+        "role_uuid": "00000000-0000-1000-8000-000000000001",
+        "role_name": "guest",
+        "role_essential": False,
+        "role_description": "guest role",
+        "grant_access": False,
+        "edit_users": False,
+        "edit_models": False,
+        "edit_roles": False,
+    }
 ]
 
 data_roles_model = [
     {
-        "role_uuid": "00000000-0000-1000-8000-000000000000",
+        "role_uuid": "00000000-0000-1000-8000-000000000002",
         "role_name": "model_owner",
         "role_essential": True,
         "role_description": "owner role",
@@ -158,9 +167,9 @@ data_roles_model = [
         "edit_model": True,
         "download_model": True,
         "grant_access_model": True,
-     },
-     {
-        "role_uuid": "00000000-0000-1000-8000-000000000000",
+    },
+    {
+        "role_uuid": "00000000-0000-1000-8000-000000000003",
         "role_name": "model_guest",
         "role_essential": False,
         "role_description": "owner role",
@@ -169,12 +178,12 @@ data_roles_model = [
         "edit_model": False,
         "download_model": False,
         "grant_access_model": False,
-     }
+    },
 ]
 
 data_roles_instance = [
     {
-        "role_uuid": "00000000-0000-1000-8000-000000000000",
+        "role_uuid": "00000000-0000-1000-8000-000000000004",
         "role_name": "instance_owner",
         "role_essential": True,
         "role_description": "owner role",
@@ -186,9 +195,9 @@ data_roles_instance = [
         "grant_access_instance": True,
         "request_labels": True,
         "respons_labels": True,
-     },
-     {
-        "role_uuid": "00000000-0000-1000-8000-000000000000",
+    },
+    {
+        "role_uuid": "00000000-0000-1000-8000-000000000005",
         "role_name": "instance_guest",
         "role_essential": False,
         "role_description": "guest role",
@@ -200,7 +209,33 @@ data_roles_instance = [
         "grant_access_instance": False,
         "request_labels": False,
         "respons_labels": False,
-     }
+    },
+]
+
+data_access_general = [
+    {
+        "access_uuid": "00000000-0000-1000-8000-000000000000",
+        "user_uuid": "00000000-0000-1000-8000-000000000000",
+        "role_uuid": "00000000-0000-1000-8000-000000000000",
+    },
+]
+
+data_access_model = [
+    {
+        "access_uuid": "00000000-0000-1000-8000-000000000001",
+        "user_uuid": "00000000-0000-1000-8000-000000000001",
+        "role_uuid": "00000000-0000-1000-8000-000000000002",
+        "model_uuid": "00000000-0001-1000-8000-000000000000",
+    }
+]
+
+data_access_instance = [
+    {
+        "access_uuid": "00000000-0000-1000-8000-000000000002",
+        "user_uuid": "00000000-0000-1000-8000-000000000000",
+        "role_uuid": "00000000-0000-1000-8000-000000000004",
+        "instance_uuid": "00000000-0002-1000-8000-000000000000",
+    },
 ]
 
 data_code = dict()

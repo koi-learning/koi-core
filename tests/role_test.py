@@ -25,8 +25,30 @@ def test_get_roles(api_mock):
     model_roles = list(pool.get_all_model_roles())
     instance_roles = list(pool.get_all_instance_roles())
 
-    assert len(general_roles) == 1
+    assert len(general_roles) == 2
     assert len(model_roles) == 2
     assert len(instance_roles) == 2
+
+    koi.deinit()
+
+
+def test_user_check_grant_revoke_access(api_mock):
+    koi.init()
+
+    pool = koi.create_api_object_pool(host="http://base", username="user", password="password")
+
+    roles = list(pool.get_all_general_roles())
+
+    user = next(pool.get_all_users())
+
+    assert user.has_role(roles[1]) is False
+
+    user.grant_access(roles[1])
+
+    assert user.has_role(roles[1]) is True
+
+    user.revoke_access(roles[1])
+
+    assert user.has_role(roles[1]) is False
 
     koi.deinit()

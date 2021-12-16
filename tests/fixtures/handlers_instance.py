@@ -31,22 +31,22 @@ def instances(request, context):
         "instance_name",
         "instance_uuid",
     ]
-    match = re.search(r"http://base/api/model/(\d*)/instance", str(request))
+    match = re.search(r"http://base/api/model/([0-9,a-f,-]*)/instance", str(request))
     model_id = UUID(match[1])
 
-    model = next((model for model in data_models if model["model_uuid"] == model_id), None)
+    model = next((model for model in data_models if UUID(model["model_uuid"]) == model_id), None)
     return [{key: instance[key] for key in keys} for instance in model["instances"]]
 
 
 @cache_controlled
 def instance(request, context):
-    match = re.search(r"http://base/api/model/(\d*)/instance/(\d*)", str(request))
+    match = re.search(r"http://base/api/model/([0-9,a-f,-]*)/instance/([0-9,a-f,-]*)", str(request))
     model_id = UUID(match[1])
     instance_id = UUID(match[2])
 
-    model = next((model for model in data_models if model["model_uuid"] == model_id), None)
+    model = next((model for model in data_models if UUID(model["model_uuid"]) == model_id), None)
 
-    instance = next((instance for instance in model["instances"] if instance["instance_uuid"] == instance_id), None,)
+    instance = next((instance for instance in model["instances"] if UUID(instance["instance_uuid"]) == instance_id), None,)
     return instance
 
 
@@ -57,7 +57,7 @@ def instance_parameter(request, context):
 
 @cache_controlled
 def instance_parameter_set(request, context):
-    match = re.search(r"http://base/api/model/(\d*)/instance/(\d*)/parameter", str(request))
+    match = re.search(r"http://base/api/model/([0-9,a-f,-]*)/instance/([0-9,a-f,-]*)/parameter", str(request))
     model_id = UUID(match[1])
     instance_id = UUID(match[2])
 
@@ -66,11 +66,11 @@ def instance_parameter_set(request, context):
     param_value = req["value"]
 
     for idx_m, model in enumerate(data_models):
-        if model["model_uuid"] == model_id:
+        if UUID(model["model_uuid"]) == model_id:
             for idx_i, instance in enumerate(model["instances"]):
-                if instance["instance_uuid"] == instance_id:
+                if UUID(instance["instance_uuid"]) == instance_id:
                     for idx_p, param in enumerate(instance["parameter"]):
-                        if param_id == param["param_uuid"]:
+                        if param_id == UUID(param["param_uuid"]):
                             data_models[idx_m]["instances"][idx_i]["parameter"][idx_p]["value"] = param_value
                             context.status_code = 200
                             return {}
