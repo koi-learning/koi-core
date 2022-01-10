@@ -53,7 +53,7 @@ def test_user_check_grant_revoke_general_access(api_mock):
 
     user = next(pool.get_all_users())
 
-    helper_check_role(user, roles[0])
+    helper_check_role(user, roles[1])
 
     koi.deinit()
 
