@@ -117,26 +117,72 @@ def access_general(request, context):
 
 
 def access_model(request, context):
-    match = re.search(r"http://base/api/userroles/model/([0-9,a-f,-]*)", str(request))
-    user_id = UUID(match[1])
+    match = re.search(r"http://base/api/model/([0-9,a-f,-]*)/access((/)([0-9,a-f,-]*))?", str(request))
 
-    for role in data_roles_model:
-        if UUID(role["user_uuid"]) == user_id:
+    access_uuid = match[4]
+    if access_uuid is not None:
+        access_uuid = UUID(access_uuid)
+
+    if request._request.method == "GET":
+        if access_uuid is None:
             context.status_code = 200
-            return role
+            return data_access_model
+        else:
+            for access in data_access_model:
+                if UUID(access["access_uuid"]) == access_uuid:
+                    context.status_code = 200
+                    return access
 
-    context.status_code = 404
-    return {}
+    elif request._request.method == "POST" and access_uuid is None:
+        new_access = request.json()
+        new_access["access_uuid"] = str(uuid1())
+        data_access_model.append(new_access)
+        context.status_code = 200
+        return {}
+
+    elif request._request.method == "DELETE" and access_uuid is not None:
+        temp_access = list(data_access_model)
+        for access in temp_access:
+            if UUID(access["access_uuid"]) == access_uuid:
+                data_access_model.remove(access)
+                context.status_code = 200
+                return {}
+    else:
+        context.status_code = 405
+        return {}
 
 
 def access_instance(request, context):
-    match = re.search(r"http://base/api/userroles/instance/([0-9,a-f,-]*)", str(request))
-    user_id = UUID(match[1])
+    match = re.search(r"http://base/api/model/([0-9,a-f,-]*)/instance/([0-9,a-f,-]*)/access((/)([0-9,a-f,-]*))?", str(request))
 
-    for role in data_roles_instance:
-        if UUID(role["user_uuid"]) == user_id:
+    access_uuid = match[5]
+    if access_uuid is not None:
+        access_uuid = UUID(access_uuid)
+
+    if request._request.method == "GET":
+        if access_uuid is None:
             context.status_code = 200
-            return role
+            return data_access_instance
+        else:
+            for access in data_access_instance:
+                if UUID(access["access_uuid"]) == access_uuid:
+                    context.status_code = 200
+                    return access
 
-    context.status_code = 404
-    return {}
+    elif request._request.method == "POST" and access_uuid is None:
+        new_access = request.json()
+        new_access["access_uuid"] = str(uuid1())
+        data_access_instance.append(new_access)
+        context.status_code = 200
+        return {}
+
+    elif request._request.method == "DELETE" and access_uuid is not None:
+        temp_access = list(data_access_instance)
+        for access in temp_access:
+            if UUID(access["access_uuid"]) == access_uuid:
+                data_access_instance.remove(access)
+                context.status_code = 200
+                return {}
+    else:
+        context.status_code = 405
+        return {}

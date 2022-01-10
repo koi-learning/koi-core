@@ -86,8 +86,8 @@ def api_mock(testing_model):
             self.requests_mock.register_uri(ANY, re.compile(r"http://base/api/userroles/(\w*)/([0-9,a-f,-]*)"), json=role)
 
             self.requests_mock.register_uri(ANY, re.compile("http://base/api/access"), json=access_general)
-            self.requests_mock.register_uri(ANY, "http://base/api/model/([0-9,a-f,-]*)/access", json=access_model)
-            self.requests_mock.register_uri(ANY, "http://base/api/model/([0-9,a-f,-]*)/instance/([0-9,a-f,-]*)/access", json=access_instance)
+            self.requests_mock.register_uri(ANY, re.compile(r"http://base/api/model/([0-9,a-f,-]*)/access"), json=access_model)
+            self.requests_mock.register_uri(ANY, re.compile(r"http://base/api/model/([0-9,a-f,-]*)/instance/([0-9,a-f,-]*)/access"), json=access_instance)
 
         def set_offline(self):
             if self.requests_mock:
