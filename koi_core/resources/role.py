@@ -148,7 +148,7 @@ class InstanceRoleBasicFields:
     response_label: bool
 
 
-class InstanceRoleProxy(ModelRole):
+class InstanceRoleProxy(InstanceRole):
     @property
     @cache
     def _basic_fields(self, meta) -> InstanceRoleBasicFields:
