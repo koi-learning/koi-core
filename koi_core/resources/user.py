@@ -83,7 +83,7 @@ class UserProxy(User):
     def password(self, value: str) -> None:
         self.pool.api.users.update_user(self.id, value)
 
-    def grant_access(self, role: Union[GeneralRole, ModelRole, InstanceRole], object: Union[Model, Instance]=None) -> None:
+    def grant_access(self, role: Union[GeneralRole, ModelRole, InstanceRole], object: Union[Model, Instance] = None) -> None:
         if object is None and isinstance(role, GeneralRole):
             self.pool.api.access.grant_general_access(self.id, role.id)
         else:
@@ -111,9 +111,9 @@ class UserProxy(User):
             collection, _ = self.pool.api.access._get_general_access_collection()
         else:
             if isinstance(object, Model):
-                collection = self.pool.api.access._get_model_access_collection(object.id)
+                collection, _ = self.pool.api.access._get_model_access_collection(object.id)
             elif isinstance(object, Instance):
-                collection = self.pool.api.access._get_instance_access_collection(object.id)
+                collection, _ = self.pool.api.access._get_instance_access_collection(object.id)
             else:
                 raise ValueError("Unknown object type")
 
