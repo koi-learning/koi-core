@@ -70,14 +70,14 @@ class APIAccess:
 
         access = next(
             filter(
-                lambda x: UserId(user_uuid=x["user_uuid"]) == user and ModelRoleId(role_uuid=x["role_uuid"]) == role,
+                lambda x: UserId(user_uuid=UUID(x["user_uuid"])) == user and ModelRoleId(role_uuid=UUID(x["role_uuid"])) == role,
                 access_collection,
             ),
             None,
         )
 
         if access is not None:
-            path = self.base._build_path(ModelAccessId(role_uuid=access["access_uuid"]))
+            path = self.base._build_path(ModelAccessId(id=model, access_uuid=access["access_uuid"]))
             self.base._DELETE(path)
 
     def _get_instance_access_collection(self, instance: UUID):
@@ -94,12 +94,12 @@ class APIAccess:
 
         access = next(
             filter(
-                lambda x: UserId(user_uuid=x["user_uuid"]) == user and InstanceRoleId(role_uuid=x["role_uuid"]) == role,
+                lambda x: UserId(user_uuid=UUID(x["user_uuid"])) == user and InstanceRoleId(role_uuid=UUID(x["role_uuid"])) == role,
                 access_collection,
             ),
             None,
         )
 
         if access is not None:
-            path = self.base._build_path(InstanceAccessId(role_uuid=access["access_uuid"]))
+            path = self.base._build_path(InstanceAccessId(id=instance, access_uuid=access["access_uuid"]))
             self.base._DELETE(path)
