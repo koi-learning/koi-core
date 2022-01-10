@@ -46,8 +46,49 @@ class Code:
         ...
 
 
+class LocalCode(Code):
+    def __init__(self, path):
+        self._path = path
+
+    def contains(self, sub_path):
+        return os.path.exists(self.build_path(sub_path))
+
+    def build_path(self, sub_path):
+        return os.path.join(self._path, sub_path)
+
+    def read(self, sub_path):
+        f = open(os.path.join(self._path, sub_path), "rb")
+        return f.read()
+
+    def toBytes(self):
+        file_like_object = io.BytesIO()
+        zipf = zipfile.ZipFile(file_like_object, "w", zipfile.ZIP_DEFLATED)
+        for root, dirs, files in os.walk(self._path):
+            for file in files:
+                filename = os.path.join(root, file)
+                zipf.write(filename, arcname=os.path.relpath(filename, self._path))
+        zipf.close()
+        return file_like_object.getvalue()
+
+
 class RemoteCode(Code):
-    ...
+    def __init__(self, data: bytes):
+        file = io.BytesIO(data)
+        self._archive = zipfile.ZipFile(file, mode="r")
+        self._namelist = self._archive.namelist()
+        self._data = data
+
+    def contains(self, sub_path):
+        return sub_path in self._namelist
+
+    def build_path(self, sub_path):
+        return sub_path
+
+    def read(self, path):
+        return self._archive.read(path)
+
+    def toBytes(self):
+        return self._data
 
 
 class Model:
@@ -179,48 +220,3 @@ class ModelProxy(Model):
     def new_instance(self) -> "Instance":
         instance = self.pool.new_instance(self.id)
         return instance
-
-
-class LocalCode(Code):
-    def __init__(self, path):
-        self._path = path
-
-    def contains(self, sub_path):
-        return os.path.exists(self.build_path(sub_path))
-
-    def build_path(self, sub_path):
-        return os.path.join(self._path, sub_path)
-
-    def read(self, sub_path):
-        f = open(os.path.join(self._path, sub_path), "rb")
-        return f.read()
-
-    def toBytes(self):
-        file_like_object = io.BytesIO()
-        zipf = zipfile.ZipFile(file_like_object, "w", zipfile.ZIP_DEFLATED)
-        for root, dirs, files in os.walk(self._path):
-            for file in files:
-                filename = os.path.join(root, file)
-                zipf.write(filename, arcname=os.path.relpath(filename, self._path))
-        zipf.close()
-        return file_like_object.getvalue()
-
-
-class RemoteCode(Code):
-    def __init__(self, data: bytes):
-        file = io.BytesIO(data)
-        self._archive = zipfile.ZipFile(file, mode="r")
-        self._namelist = self._archive.namelist()
-        self._data = data
-
-    def contains(self, sub_path):
-        return sub_path in self._namelist
-
-    def build_path(self, sub_path):
-        return sub_path
-
-    def read(self, path):
-        return self._archive.read(path)
-
-    def toBytes(self):
-        return self._data

@@ -43,7 +43,7 @@ def roles(request, context, page_offset, page_size):
         return
 
     context.status_code = 200
-    return data[page_offset : page_offset + page_size]
+    return data[page_offset: page_offset + page_size]
 
 
 def role(request, context):

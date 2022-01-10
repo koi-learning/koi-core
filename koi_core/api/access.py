@@ -46,7 +46,8 @@ class APIAccess:
 
         access = next(
             filter(
-                lambda x: UserId(user_uuid=UUID(x["user_uuid"])) == user and GeneralRoleId(role_uuid=UUID(x["role_uuid"])) == role,
+                lambda x: UserId(user_uuid=UUID(x["user_uuid"])) == user
+                and GeneralRoleId(role_uuid=UUID(x["role_uuid"])) == role,
                 access_collection,
             ),
             None,
@@ -70,7 +71,8 @@ class APIAccess:
 
         access = next(
             filter(
-                lambda x: UserId(user_uuid=UUID(x["user_uuid"])) == user and ModelRoleId(role_uuid=UUID(x["role_uuid"])) == role,
+                lambda x: UserId(user_uuid=UUID(x["user_uuid"])) == user
+                and ModelRoleId(role_uuid=UUID(x["role_uuid"])) == role,
                 access_collection,
             ),
             None,
@@ -94,7 +96,8 @@ class APIAccess:
 
         access = next(
             filter(
-                lambda x: UserId(user_uuid=UUID(x["user_uuid"])) == user and InstanceRoleId(role_uuid=UUID(x["role_uuid"])) == role,
+                lambda x: UserId(user_uuid=UUID(x["user_uuid"])) == user
+                and InstanceRoleId(role_uuid=UUID(x["role_uuid"])) == role,
                 access_collection,
             ),
             None,

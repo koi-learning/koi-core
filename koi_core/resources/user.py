@@ -94,7 +94,7 @@ class UserProxy(User):
             else:
                 raise ValueError("Unknown object type or role/object mismatch")
 
-    def revoke_access(self, role: Union[GeneralRole, ModelRole, InstanceRole], object: Union[Model, Instance]=None) -> None:
+    def revoke_access(self, role: Union[GeneralRole, ModelRole, InstanceRole], object: Union[Model, Instance] = None) -> None:
         if object is None and isinstance(role, GeneralRole):
             self.pool.api.access.revoke_general_access(self.id, role.id)
         else:

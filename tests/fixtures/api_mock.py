@@ -73,10 +73,14 @@ def api_mock(testing_model):
                 "GET", re.compile(r"http://base/api/model/([0-9,a-f,-]*)/instance/([0-9,a-f,-]*)"), json=instance,
             )
             self.requests_mock.register_uri(
-                "GET", re.compile(r"http://base/api/model/([0-9,a-f,-]*)/instance/([0-9,a-f,-]*)/parameter"), json=instance_parameter,
+                "GET",
+                re.compile(r"http://base/api/model/([0-9,a-f,-]*)/instance/([0-9,a-f,-]*)/parameter"),
+                json=instance_parameter,
             )
             self.requests_mock.register_uri(
-                "POST", re.compile(r"http://base/api/model/([0-9,a-f,-]*)/instance/([0-9,a-f,-]*)/parameter"), json=instance_parameter_set,
+                "POST",
+                re.compile(r"http://base/api/model/([0-9,a-f,-]*)/instance/([0-9,a-f,-]*)/parameter"),
+                json=instance_parameter_set,
             )
 
             self.requests_mock.register_uri(ANY, re.compile(r"http://base/api/user/([0-9,a-f,-]*)"), json=user)
@@ -87,7 +91,9 @@ def api_mock(testing_model):
 
             self.requests_mock.register_uri(ANY, re.compile("http://base/api/access"), json=access_general)
             self.requests_mock.register_uri(ANY, re.compile(r"http://base/api/model/([0-9,a-f,-]*)/access"), json=access_model)
-            self.requests_mock.register_uri(ANY, re.compile(r"http://base/api/model/([0-9,a-f,-]*)/instance/([0-9,a-f,-]*)/access"), json=access_instance)
+            self.requests_mock.register_uri(
+                ANY, re.compile(r"http://base/api/model/([0-9,a-f,-]*)/instance/([0-9,a-f,-]*)/access"), json=access_instance
+            )
 
         def set_offline(self):
             if self.requests_mock:

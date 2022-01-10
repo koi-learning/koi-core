@@ -142,7 +142,7 @@ def test_offline_features_are_persistived():
         for feature in features:
             assert (
                 strategy.shouldPersist(cls, feature, None) is True
-            ), f"Method {feature} of class {cls.__name__} is marked as Offline Feature but is not persitified in ExpireCachingStrategy"
+            ), f"Method {feature} of class {cls.__name__} is not persitified in ExpireCachingStrategy"
     pass
 
 

@@ -26,7 +26,7 @@ from koi_core.resources.model import LocalCode
 from koi_core.resources.instance import Instance
 from koi_core.resources.pool import APIObjectPool, LocalOnlyObjectPool
 from koi_core.exceptions import KoiInitializationError
-import koi_core.control
+import koi_core.control  # noqa: F401
 
 _isInitialized = False
 
