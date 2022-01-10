@@ -16,6 +16,18 @@
 import koi_core as koi
 
 
+def helper_check_role(user, role, object=None):
+    assert user.has_role(role, object) is False
+
+    user.grant_access(role, object)
+
+    assert user.has_role(role, object) is True
+
+    user.revoke_access(role, object)
+
+    assert user.has_role(role, object) is False
+
+
 def test_get_roles(api_mock):
     koi.init()
 
@@ -32,7 +44,7 @@ def test_get_roles(api_mock):
     koi.deinit()
 
 
-def test_user_check_grant_revoke_access(api_mock):
+def test_user_check_grant_revoke_general_access(api_mock):
     koi.init()
 
     pool = koi.create_api_object_pool(host="http://base", username="user", password="password")
@@ -41,14 +53,44 @@ def test_user_check_grant_revoke_access(api_mock):
 
     user = next(pool.get_all_users())
 
-    assert user.has_role(roles[1]) is False
+    helper_check_role(user, roles[0])
 
-    user.grant_access(roles[1])
+    koi.deinit()
 
-    assert user.has_role(roles[1]) is True
 
-    user.revoke_access(roles[1])
+def test_user_check_grant_revoke_model_access(api_mock):
+    koi.init()
 
-    assert user.has_role(roles[1]) is False
+    pool = koi.create_api_object_pool(host="http://base", username="user", password="password")
+
+    roles = list(pool.get_all_model_roles())
+
+    user = next(pool.get_all_users())
+
+    model = next(pool.get_all_models())
+
+    assert user.has_role(roles[0], model) is True
+
+    helper_check_role(user, roles[1], model)
+
+    koi.deinit()
+
+
+def test_user_check_grant_revoke_instance_access(api_mock):
+    koi.init()
+
+    pool = koi.create_api_object_pool(host="http://base", username="user", password="password")
+
+    roles = list(pool.get_all_instance_roles())
+
+    user = next(pool.get_all_users())
+
+    model = next(pool.get_all_models())
+
+    instance = next(model.instances)
+
+    assert user.has_role(roles[0], instance) is True
+
+    helper_check_role(user, roles[1], instance)
 
     koi.deinit()
