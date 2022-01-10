@@ -12,6 +12,7 @@
 # Lesser General Public License for more details. A copy of the
 # GNU Lesser General Public License is distributed along with this
 # software and can be found at http://www.gnu.org/licenses/lgpl.html
+
 from uuid import UUID
 from typing import Tuple
 

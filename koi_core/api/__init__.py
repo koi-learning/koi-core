@@ -17,6 +17,9 @@ from koi_core.api.common import BaseAPI, RequestsAPI
 from .model import APIModels
 from .instance import APIInstances
 from .sample import APISamples
+from .user import APIUsers
+from .role import APIRoles
+from .access import APIAccess
 
 
 class API(RequestsAPI):
@@ -26,6 +29,9 @@ class API(RequestsAPI):
         self.models = APIModels(self)
         self.instances = APIInstances(self)
         self.samples = APISamples(self)
+        self.users = APIUsers(self)
+        self.roles = APIRoles(self)
+        self.access = APIAccess(self)
 
 
 class OfflineAPI(BaseAPI):
@@ -35,3 +41,6 @@ class OfflineAPI(BaseAPI):
         self.models = APIModels(self)
         self.instances = APIInstances(self)
         self.samples = APISamples(self)
+        self.users = APIUsers(self)
+        self.roles = APIRoles(self)
+        self.access = APIAccess(self)

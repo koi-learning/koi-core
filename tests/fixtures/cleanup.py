@@ -16,10 +16,11 @@
 import pytest
 import koi_core
 
+
 @pytest.fixture(autouse=True)
 def cleanup():
-  yield
-  try:
-    koi_core.deinit()
-  except Exception:
-    pass
+    yield
+    try:
+        koi_core.deinit()
+    except Exception:
+        pass

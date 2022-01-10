@@ -16,6 +16,57 @@
 from uuid import UUID
 
 
+class GeneralAccessId:
+    access_uuid: UUID
+
+    def __init__(self, access_uuid: UUID = None, id=None) -> None:
+        self.access_uuid = access_uuid if access_uuid else id.access_uuid
+
+    def __hash__(self):
+        return hash(self.access_uuid)
+
+    def __eq__(self, other):
+        return self.access_uuid == other.access_uuid
+
+
+class BaseRoleId:
+    role_uuid: UUID
+
+    def __init__(self, role_uuid: UUID = None, id=None) -> None:
+        self.role_uuid = role_uuid if role_uuid else id.role_uuid
+
+    def __hash__(self):
+        return hash(self.role_uuid)
+
+    def __eq__(self, other):
+        return self.role_uuid == other.role_uuid
+
+
+class GeneralRoleId(BaseRoleId):
+    ...
+
+
+class ModelRoleId(BaseRoleId):
+    ...
+
+
+class InstanceRoleId(BaseRoleId):
+    ...
+
+
+class UserId:
+    user_uuid: UUID
+
+    def __init__(self, user_uuid: UUID = None, id=None) -> None:
+        self.user_uuid = user_uuid if user_uuid else id.user_uuid
+
+    def __hash__(self):
+        return hash(self.user_uuid)
+
+    def __eq__(self, other):
+        return self.user_uuid == other.user_uuid
+
+
 class ModelId:
     model_uuid: UUID
 
@@ -27,6 +78,24 @@ class ModelId:
 
     def __eq__(self, other):
         return self.model_uuid == other.model_uuid
+
+
+class ModelAccessId(ModelId):
+    access_uuid: UUID
+
+    def __init__(self, model_uuid: UUID = None, access_uuid: UUID = None, id=None) -> None:
+        self.model_uuid = model_uuid if model_uuid else id.model_uuid
+        self.access_uuid = access_uuid if access_uuid else id.access_uuid
+
+    def __hash__(self):
+        return hash(self.access_uuid)
+
+    def __eq__(self, other):
+        return self.access_uuid == other.access_uuid
+
+    @property
+    def ModelId(self):
+        return ModelId(id=self)
 
 
 class InstanceId(ModelId):
@@ -46,7 +115,32 @@ class InstanceId(ModelId):
 
     @property
     def ModelId(self) -> ModelId:
-        return ModelId(self)
+        return ModelId(id=self)
+
+
+class InstanceAccessId(InstanceId):
+    access_uuid: UUID
+
+    def __init__(
+        self,
+        model_uuid: UUID = None,
+        instance_uuid: UUID = None,
+        access_uuid: UUID = None,
+        id=None,
+    ) -> None:
+        self.model_uuid = model_uuid if model_uuid else id.model_uuid
+        self.instance_uuid = instance_uuid if instance_uuid else id.instance_uuid
+        self.access_uuid = access_uuid if access_uuid else id.access_uuid
+
+    def __hash__(self):
+        return hash(self.access_uuid)
+
+    def __eq__(self, other):
+        return self.access_uuid == other.access_uuid
+
+    @property
+    def InstanceId(self) -> InstanceId:
+        return InstanceId(id=self)
 
 
 class DescriptorId(InstanceId):

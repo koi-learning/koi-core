@@ -22,14 +22,14 @@ def run_all_models(persistence=None):
 
     if persistence:
         pool = koi.create_api_object_pool(
-            host="testing://base",
+            host="http://base",
             username="user",
             password="password",
             persistance_file=persistence,
         )
     else:
         pool = koi.create_api_object_pool(
-            host="testing://base",
+            host="http://base",
             username="user",
             password="password"
         )

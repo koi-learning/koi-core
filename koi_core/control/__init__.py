@@ -13,4 +13,4 @@
 # GNU Lesser General Public License is distributed along with this
 # software and can be found at http://www.gnu.org/licenses/lgpl.html
 
-from .control import train, infer, terminate
+from .control import train, infer, terminate  # noqa: F401

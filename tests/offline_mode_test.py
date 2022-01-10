@@ -15,7 +15,6 @@
 
 import io
 from koi_core.caching_strategy import ExpireCachingStrategy
-import os
 from koi_core.resources.instance import Instance
 import uuid
 from koi_core.resources.ids import InstanceId
@@ -29,28 +28,26 @@ import inspect
 @pytest.mark.parametrize("offlineOrConnectionError", [False, True])
 def test_offline_mocking(offlineOrConnectionError, api_mock):
     # check if the api mocking works
-    model = requests.get("testing://base/api/model").json()
+    model = requests.get("http://base/api/model").json()
     if offlineOrConnectionError:
         api_mock.set_offline()
     else:
         api_mock.set_connectionError()
     with pytest.raises(Exception):
-        requests.get("testing://base/api/model")
+        requests.get("http://base/api/model")
     api_mock.set_online()
-    assert requests.get("testing://base/api/model").json() == model
+    assert requests.get("http://base/api/model").json() == model
 
 
 @pytest.mark.parametrize("offlineOrConnectionError", [False, True])
 def test_offline_detection(offlineOrConnectionError, api_mock):
     koi_core.init()
-    pool = koi_core.create_api_object_pool(
-        host="testing://base", username="user", password="password"
-    )
+    pool = koi_core.create_api_object_pool(host="http://base", username="user", password="password")
 
     # check that the api reports as online and continous to do so after authentication
-    assert pool.api.online == True
+    assert pool.api.online is True
     pool.get_all_models()  # make sure the models are cached
-    assert pool.api.online == True
+    assert pool.api.online is True
 
     # check if the api detects the offline server when doing something
     if offlineOrConnectionError:
@@ -58,7 +55,7 @@ def test_offline_detection(offlineOrConnectionError, api_mock):
     else:
         api_mock.set_connectionError()
     pool.get_all_models()  # just do something, so that the API can detect the absence of the server
-    assert pool.api.online == False
+    assert pool.api.online is False
 
     koi_core.deinit()
 
@@ -66,12 +63,10 @@ def test_offline_detection(offlineOrConnectionError, api_mock):
 @pytest.mark.parametrize("offlineOrConnectionError", [False, True])
 def test_offline_authentication(offlineOrConnectionError, api_mock):
     koi_core.init()
-    pool = koi_core.create_api_object_pool(
-        host="testing://base", username="user", password="password"
-    )
+    pool = koi_core.create_api_object_pool(host="http://base", username="user", password="password")
 
     # check that the api reports as online
-    assert pool.api.online == True
+    assert pool.api.online is True
 
     # check if the api detects the offline server when trying to authenticate
     if offlineOrConnectionError:
@@ -80,7 +75,7 @@ def test_offline_authentication(offlineOrConnectionError, api_mock):
         api_mock.set_connectionError()
     with pytest.raises(KoiApiOfflineException):
         pool.api.authenticate()
-    assert pool.api.online == False
+    assert pool.api.online is False
 
     koi_core.deinit()
 
@@ -91,16 +86,10 @@ def test_offline_model_inference(offlineOrConnectionError, api_mock):
 
     koi_core.init()
     pool = koi_core.create_api_object_pool(
-        host="testing://base",
-        username="user",
-        password="password",
-        persistance_file=persistence,
+        host="http://base", username="user", password="password", persistance_file=persistence,
     )
     instance: Instance = pool.instance(
-        InstanceId(
-            uuid.UUID("00000000-0001-1000-8000-000000000000"),
-            uuid.UUID("00000000-0002-1000-8000-000000000000"),
-        )
+        InstanceId(uuid.UUID("00000000-0001-1000-8000-000000000000"), uuid.UUID("00000000-0002-1000-8000-000000000000"),)
     )
     koi_core.control.infer(instance, [], dev=True)
     koi_core.deinit()
@@ -112,16 +101,10 @@ def test_offline_model_inference(offlineOrConnectionError, api_mock):
     persistence.seek(0)
     koi_core.init()
     pool = koi_core.create_api_object_pool(
-        host="testing://base",
-        username="user",
-        password="password",
-        persistance_file=persistence,
+        host="http://base", username="user", password="password", persistance_file=persistence,
     )
     instance = pool.instance(
-        InstanceId(
-            uuid.UUID("00000000-0001-1000-8000-000000000000"),
-            uuid.UUID("00000000-0002-1000-8000-000000000000"),
-        )
+        InstanceId(uuid.UUID("00000000-0001-1000-8000-000000000000"), uuid.UUID("00000000-0002-1000-8000-000000000000"),)
     )
     koi_core.control.infer(instance, [], dev=True)
     koi_core.deinit()
@@ -136,11 +119,7 @@ def test_offline_features_are_persistived():
             obj = modules.pop()
             modules_checked.append(obj)
             for name, obj in inspect.getmembers(obj):
-                if (
-                    inspect.ismodule(obj)
-                    and obj.__name__.startswith("koi_core")
-                    and obj not in modules_checked
-                ):
+                if inspect.ismodule(obj) and obj.__name__.startswith("koi_core") and obj not in modules_checked:
                     modules.append(obj)
                 elif inspect.isclass(obj):
                     classes.append(obj)
@@ -162,8 +141,8 @@ def test_offline_features_are_persistived():
         features = find_offlineFeature(cls)
         for feature in features:
             assert (
-                strategy.shouldPersist(cls, feature, None) == True
-            ), f"Method {feature} of class {cls.__name__} is marked as Offline Feature but is not persitified in ExpireCachingStrategy"
+                strategy.shouldPersist(cls, feature, None) is True
+            ), f"Method {feature} of class {cls.__name__} is not persitified in ExpireCachingStrategy"
     pass
 
 
@@ -173,16 +152,10 @@ def test_offline_api(offlineOrConnectionError, api_mock):
 
     koi_core.init()
     pool = koi_core.create_api_object_pool(
-        host="testing://base",
-        username="user",
-        password="password",
-        persistance_file=persistence,
+        host="http://base", username="user", password="password", persistance_file=persistence,
     )
     instance: Instance = pool.instance(
-        InstanceId(
-            uuid.UUID("00000000-0001-1000-8000-000000000000"),
-            uuid.UUID("00000000-0002-1000-8000-000000000000"),
-        )
+        InstanceId(uuid.UUID("00000000-0001-1000-8000-000000000000"), uuid.UUID("00000000-0002-1000-8000-000000000000"),)
     )
     koi_core.control.infer(instance, [], dev=True)
     koi_core.deinit()
@@ -192,16 +165,11 @@ def test_offline_api(offlineOrConnectionError, api_mock):
     koi_core.init()
     pool = koi_core.create_offline_object_pool(persistance_file=persistence)
     instance = pool.instance(
-        InstanceId(
-            uuid.UUID("00000000-0001-1000-8000-000000000000"),
-            uuid.UUID("00000000-0002-1000-8000-000000000000"),
-        )
+        InstanceId(uuid.UUID("00000000-0001-1000-8000-000000000000"), uuid.UUID("00000000-0002-1000-8000-000000000000"),)
     )
     koi_core.control.infer(instance, [], dev=True)
     koi_core.deinit()
-    assert (
-        api_mock.requests_mock.call_count == 0
-    ), f"The Offline API should not make any HTTP Request"
+    assert api_mock.requests_mock.call_count == 0, "The Offline API should not make any HTTP Request"
 
     if offlineOrConnectionError:
         api_mock.set_offline()
@@ -211,10 +179,7 @@ def test_offline_api(offlineOrConnectionError, api_mock):
     koi_core.init()
     pool = koi_core.create_offline_object_pool(persistance_file=persistence)
     instance = pool.instance(
-        InstanceId(
-            uuid.UUID("00000000-0001-1000-8000-000000000000"),
-            uuid.UUID("00000000-0002-1000-8000-000000000000"),
-        )
+        InstanceId(uuid.UUID("00000000-0001-1000-8000-000000000000"), uuid.UUID("00000000-0002-1000-8000-000000000000"),)
     )
     koi_core.control.infer(instance, [], dev=True)
     koi_core.deinit()
