@@ -44,11 +44,11 @@ class GeneralRoleProxy(GeneralRole):
     @property
     @cache
     def _basic_fields(self, meta) -> GeneralRoleBasicFields:
-        return self.pool.api.roles.get_role(self.id, meta)
+        return self.pool.api.roles.get_general_role(self.id, meta)
 
     @_basic_fields.setter
     def _basic_fields(self, value: GeneralRoleBasicFields):
-        self.pool.api.roles.update_role(self.id, value)
+        self.pool.api.roles.update_general_role(self.id, value)
 
     def __getattr__(self, name: str) -> Any:
         if name in GeneralRoleBasicFields.__annotations__:
@@ -95,11 +95,11 @@ class ModelRoleProxy(ModelRole):
     @property
     @cache
     def _basic_fields(self, meta) -> ModelRoleBasicFields:
-        return self.pool.api.roles.get_role(self.id, meta)
+        return self.pool.api.roles.get_model_role(self.id, meta)
 
     @_basic_fields.setter
     def _basic_fields(self, value: ModelRoleBasicFields):
-        self.pool.api.roles.update_role(self.id, value)
+        self.pool.api.roles.update_model_role(self.id, value)
 
     def __getattr__(self, name: str) -> Any:
         if name in ModelRoleBasicFields.__annotations__:
@@ -152,11 +152,11 @@ class InstanceRoleProxy(InstanceRole):
     @property
     @cache
     def _basic_fields(self, meta) -> InstanceRoleBasicFields:
-        return self.pool.api.roles.get_role(self.id, meta)
+        return self.pool.api.roles.get_instance_role(self.id, meta)
 
     @_basic_fields.setter
     def _basic_fields(self, value: InstanceRoleBasicFields):
-        self.pool.api.roles.update_role(self.id, value)
+        self.pool.api.roles.update_instance_role(self.id, value)
 
     def __getattr__(self, name: str) -> Any:
         if name in InstanceRoleBasicFields.__annotations__:
