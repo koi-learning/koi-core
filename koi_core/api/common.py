@@ -216,23 +216,23 @@ class BaseAPI:
     ):
         path = "/api"
         if isinstance(id, GeneralAccessId):
-            path = path + f"/access/{id.access_uuid}"
+            path = path + f"/access/{id.access_uuid.hex}"
         if isinstance(id, GeneralRoleId):
-            path = path + f"/roles/general{id.role_uuid}"
+            path = path + f"/roles/general{id.role_uuid.hex}"
         if isinstance(id, ModelRoleId):
-            path = path + f"/roles/model{id.model_uuid}"
+            path = path + f"/roles/model{id.role_uuid.hex}"
         if isinstance(id, InstanceRoleId):
-            path = path + f"/roles/instance{id.instance_uuid}"
+            path = path + f"/roles/instance{id.role_uuid.hex}"
         if isinstance(id, UserId):
             path = path + f"/user/{id.user_uuid.hex}"
         if isinstance(id, ModelId):
             path = path + f"/model/{id.model_uuid.hex}"
         if isinstance(id, ModelAccessId):
-            path = path + f"/access/{id.access_uuid}"
+            path = path + f"/access/{id.access_uuid.hex}"
         if isinstance(id, InstanceId):
             path = path + f"/instance/{id.instance_uuid.hex}"
         if isinstance(id, InstanceAccessId):
-            path = path + f"/access/{id.access_uuid}"
+            path = path + f"/access/{id.access_uuid.hex}"
         if isinstance(id, DescriptorId):
             path = path + f"/descriptor/{id.descriptor_uuid.hex}"
         if isinstance(id, SampleId):

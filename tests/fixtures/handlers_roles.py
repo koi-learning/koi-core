@@ -135,7 +135,8 @@ def access_model(request, context):
 
     elif request._request.method == "POST" and access_uuid is None:
         new_access = request.json()
-        new_access["access_uuid"] = str(uuid1())
+        new_access["access_uuid"] = uuid1().hex
+        new_access["model_uuid"] = UUID(match[1]).hex
         data_access_model.append(new_access)
         context.status_code = 200
         return {}
@@ -171,7 +172,8 @@ def access_instance(request, context):
 
     elif request._request.method == "POST" and access_uuid is None:
         new_access = request.json()
-        new_access["access_uuid"] = str(uuid1())
+        new_access["access_uuid"] = uuid1().hex
+        new_access["instance_uuid"] = UUID(match[2]).hex
         data_access_instance.append(new_access)
         context.status_code = 200
         return {}

@@ -79,7 +79,7 @@ class APIAccess:
         )
 
         if access is not None:
-            path = self.base._build_path(ModelAccessId(id=model, access_uuid=access["access_uuid"]))
+            path = self.base._build_path(ModelAccessId(id=model, access_uuid=UUID(access["access_uuid"])))
             self.base._DELETE(path)
 
     def _get_instance_access_collection(self, instance: UUID):
@@ -104,5 +104,5 @@ class APIAccess:
         )
 
         if access is not None:
-            path = self.base._build_path(InstanceAccessId(id=instance, access_uuid=access["access_uuid"]))
+            path = self.base._build_path(InstanceAccessId(id=instance, access_uuid=UUID(access["access_uuid"])))
             self.base._DELETE(path)
