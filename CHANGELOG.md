@@ -4,7 +4,6 @@
 - Added tests for user access
 - changed the transfer protocol for request_mock to http, as requests does not support url parameters with custom url schemes
 - fixed some minor code smells
-### 0.3.1
+### 0.3.1 -0.3.3
 - fixed a major bug when accessing roles
-### 0.3.2
 - more bug fixes for role access

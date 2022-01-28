@@ -218,11 +218,11 @@ class BaseAPI:
         if isinstance(id, GeneralAccessId):
             path = path + f"/access/{id.access_uuid.hex}"
         if isinstance(id, GeneralRoleId):
-            path = path + f"/roles/general{id.role_uuid.hex}"
+            path = path + f"/userroles/general/{id.role_uuid.hex}"
         if isinstance(id, ModelRoleId):
-            path = path + f"/roles/model{id.role_uuid.hex}"
+            path = path + f"/userroles/model/{id.role_uuid.hex}"
         if isinstance(id, InstanceRoleId):
-            path = path + f"/roles/instance{id.role_uuid.hex}"
+            path = path + f"/userroles/instance/{id.role_uuid.hex}"
         if isinstance(id, UserId):
             path = path + f"/user/{id.user_uuid.hex}"
         if isinstance(id, ModelId):

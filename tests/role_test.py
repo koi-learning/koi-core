@@ -38,6 +38,7 @@ def test_get_roles(api_mock):
     instance_roles = list(pool.get_all_instance_roles())
 
     assert len(general_roles) == 2
+    assert general_roles[0].name == "admin"
     assert len(model_roles) == 2
     assert len(instance_roles) == 2
 
