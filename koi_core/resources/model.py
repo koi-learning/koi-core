@@ -32,7 +32,10 @@ class Code:
     def contains(self, sub_path):
         ...
 
-    def get(self, sub_path) -> bytes:
+    def read(self, sub_path) -> bytes:
+        ...
+
+    def namelist(self):
         ...
 
     def load(self, instance):
@@ -49,6 +52,16 @@ class Code:
 class LocalCode(Code):
     def __init__(self, path):
         self._path = path
+
+    def gen_namelist(self):
+        for root, _, files in os.walk(self._path):
+            for file in files:
+                path = os.path.join(root, file)
+                common_path = os.path.commonpath([self._path, path])
+                rel_root = os.path.relpath(root, common_path)
+                if rel_root != ".":
+                    file = os.path.join(rel_root, file)
+                yield file
 
     def contains(self, sub_path):
         return os.path.exists(self.build_path(sub_path))
@@ -78,14 +91,31 @@ class RemoteCode(Code):
         self._namelist = self._archive.namelist()
         self._data = data
 
+    def gen_namelist(self):
+        for name in self._namelist:
+            yield os.path.normpath(name)
+
     def contains(self, sub_path):
-        return sub_path in self._namelist
+        return sub_path in self.namelist()
 
     def build_path(self, sub_path):
         return sub_path
 
     def read(self, path):
-        return self._archive.read(path)
+        path_comps = []
+        head, tail = os.path.split(path)
+        path_comps.append(tail)
+        while head != "":
+            head, tail = os.path.split(head)
+            path_comps.append(tail)
+
+        path_comps.reverse()
+
+        zipPath = zipfile.Path(self._archive)
+        for comp in path_comps:
+            zipPath = zipPath.joinpath(comp)
+
+        return zipPath.read_bytes()
 
     def toBytes(self):
         return self._data
