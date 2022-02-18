@@ -21,7 +21,7 @@ import pytest
 
 def zipdir(path, ziph):
     # ziph is zipfile handle
-    for root, dirs, files in os.walk(path):
+    for root, _, files in os.walk(path):
         for file in files:
             filename = os.path.join(root, file)
             ziph.write(filename, arcname=os.path.relpath(filename, path))
