@@ -13,7 +13,6 @@
 # GNU Lesser General Public License is distributed along with this
 # software and can be found at http://www.gnu.org/licenses/lgpl.html
 
-import sys
 from io import BytesIO
 from zipfile import ZipFile
 from tempfile import TemporaryDirectory

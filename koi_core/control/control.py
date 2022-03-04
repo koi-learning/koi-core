@@ -14,6 +14,7 @@
 # software and can be found at http://www.gnu.org/licenses/lgpl.html
 
 from typing import Any, List
+from tempfile import TemporaryDirectory
 from koi_core.control import actions
 from koi_core.resources.instance import Instance
 from .runable_instance import RunableInstance
@@ -38,8 +39,10 @@ def _set_instance(instance: Instance):
 
 def train(instance: Instance, batch_iterable=None, dev=False):
     if dev:
-        model = instance.load_code()
+        temp_dir = TemporaryDirectory()
+        model = instance.load_code(temp_dir.name)
         actions.train(model, instance, batch_iterable)
+        temp_dir.cleanup()
     else:
         _set_instance(instance)
         _runable_instance.train(batch_iterable)
@@ -47,9 +50,18 @@ def train(instance: Instance, batch_iterable=None, dev=False):
 
 def infer(instance: Instance, data, dev=False, model=None) -> List[Any]:
     if dev:
+        temp_dir = None
+
         if model is None:
-            model = instance.load_code()
-        return actions.infer(model, instance, data)
+            temp_dir = TemporaryDirectory()
+            model = instance.load_code(temp_dir.name)
+        ret = actions.infer(model, instance, data)
+
+        if temp_dir:
+            temp_dir.cleanup()
+
+        return ret
+
     else:
         _set_instance(instance)
         return _runable_instance.infer(data)

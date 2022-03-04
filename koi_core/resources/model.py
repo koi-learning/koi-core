@@ -38,11 +38,13 @@ class Code:
     def namelist(self):
         ...
 
-    def load(self, instance):
-        loader = KoiCodeLoader(self, instance.parameter)
+    def load(self, instance, temp_dir):
+        loader = KoiCodeLoader(self, instance.parameter, temp_dir)
         sys.meta_path.insert(0, loader)
         import user_code as model  # type: ignore
 
+        if hasattr(model, "set_asset_dir"):
+            model.set_asset_dir(temp_dir)
         return model
 
     def toBytes(self):

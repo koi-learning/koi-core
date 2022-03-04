@@ -1,5 +1,12 @@
 from typing import Any, List
+import os
 from koi_core.resources.instance import Instance
+
+
+def set_asset_dir(dir: str):
+    f = open(os.path.join(dir, "additional_files", "sample.txt"), "r")
+    print(f.read())
+    f.close()
 
 
 def batch_generator(instance: Instance) -> List[Any]:

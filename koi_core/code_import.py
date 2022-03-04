@@ -16,7 +16,8 @@
 from typing import TYPE_CHECKING, Union
 import zipfile
 import io
-from os.path import sep
+from os import makedirs
+from os.path import sep, dirname
 from importlib.abc import MetaPathFinder, Loader
 from importlib.machinery import ModuleSpec
 from importlib import import_module
@@ -30,7 +31,7 @@ class KoiCodeLoader(Loader, MetaPathFinder):
     _prefix = 'user_code'
     _param_module = _prefix + '.__param__'
 
-    def __init__(self, code: Union['Code', str, bytes], param_dict):
+    def __init__(self, code: Union['Code', str, bytes], param_dict, temp_dir=None):
         self._code = code
 
         if type(self._code) in [bytes, str]:
@@ -43,6 +44,25 @@ class KoiCodeLoader(Loader, MetaPathFinder):
             self._namelist = list(self._code.gen_namelist())
 
         self._params = param_dict
+        self._temp_dir = temp_dir
+        self._extract_noncode()
+
+    def _extract_noncode(self):
+        if self._temp_dir is not None:
+            for f in self._namelist:
+                if not f.endswith(".py") and not f.endswith(".pyc"):
+                    if self._archive is None:
+                        data_raw = self._code.read(f)
+                    else:
+                        data_raw = self._archive.read(f)
+
+                    # make sub dirs if they dont exist
+                    makedirs(dirname(self._temp_dir + sep + f), exist_ok=True)
+
+                    # write file to temp directory
+                    data_file = open(self._temp_dir + sep + f, 'wb')
+                    data_file.write(data_raw)
+                    data_file.close()
 
     def exec_module(self, module):
         fullname = module.__name__
