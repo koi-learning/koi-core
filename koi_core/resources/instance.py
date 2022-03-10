@@ -118,8 +118,8 @@ class Instance:
     def model(self) -> "Model":
         return self.pool.model(ModelId(self.id.model_uuid))
 
-    def load_code(self):
-        return self.model.code.load(self)
+    def load_code(self, temp_dir=None):
+        return self.model.code.load(self, temp_dir)
 
 
 class LocalInstance(Instance):

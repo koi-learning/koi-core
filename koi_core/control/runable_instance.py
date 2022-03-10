@@ -14,6 +14,7 @@
 # software and can be found at http://www.gnu.org/licenses/lgpl.html
 
 import multiprocessing
+from tempfile import TemporaryDirectory
 from koi_core.resources.instance import Instance
 from koi_core.control import actions
 
@@ -61,8 +62,11 @@ def _infer(pipe, model, instance, command: _InferCommand):
 
 
 def _process_run(pipe, instance: Instance):
+    # generate temporary directory for the model to use
+    temp_dir = TemporaryDirectory()
+
     # import code object from instance:
-    model = instance.load_code()
+    model = instance.load_code(temp_dir.name)
 
     while(True):
         def default(pipe, model, instance, command):
@@ -80,6 +84,9 @@ def _process_run(pipe, instance: Instance):
                 pipe.send(_ExceptionResponse(e))
 
     pipe.send(_ExitResponse())
+
+    # release the temp directory
+    temp_dir.cleanup()
     return 0
 
 
