@@ -25,14 +25,6 @@ if TYPE_CHECKING:
     from koi_core.resources.pool import LocalOnlyObjectPool, APIObjectPool
 
 
-def _consumed_filter(s: Sample):
-    return s.consumed and not s.obsolete
-
-
-def _unconsumed_filter(s: Sample):
-    return not s.consumed and not s.obsolete
-
-
 class Descriptor:
     id: DescriptorId
     key: str
@@ -100,6 +92,7 @@ class DescriptorProxy(Descriptor):
 
 
 class Instance:
+    id: Union[InstanceId, ModelId]
     name: str
     description: str
     finalized: bool

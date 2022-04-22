@@ -48,3 +48,5 @@ def test_instance_parameter(api_mock):
 
     with pytest.raises(TypeError):
         inst.parameter["param2"] = "15"
+
+    koi.deinit()
