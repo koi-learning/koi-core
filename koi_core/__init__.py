@@ -46,6 +46,7 @@ def deinit():
             "KOI Core must be initialized before deinitialization"
         )
     getCachingPersistence().persistify()
+    koi_core.control.terminate()
     _isInitialized = False
 
 
