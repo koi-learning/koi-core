@@ -126,9 +126,12 @@ class RunableInstance():
         self._pipe.send(_ExitCommand())
 
         # wait for the process to finish
-        self._process.join(0.5)
+        self._process.join(3.0)
 
         # check the processes exit code
         if self._process.exitcode is not None:
             # kill if necessary
             self._process.terminate()
+
+    def is_alive(self):
+        return self._process.is_alive()
