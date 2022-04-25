@@ -91,7 +91,7 @@ koi.init()
 
 Creeate an object pool by using:
 ```
-pool = koi.koi.create_api_object_pool("koi-host", "username", "password")
+pool = koi.create_api_object_pool("koi-host", "username", "password")
 ```
 
 Now you can create objects and edit them like so:
