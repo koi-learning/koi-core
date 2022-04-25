@@ -10,3 +10,5 @@
 ### 0.3.4
 - added support for additional files in model zip files
 - unified the code loaders for remote and local code
+### 0.3.5
+- multiple RunableInstances can be used (when using a command from the control namespace the number of allowed instances is now an optional parameter)
