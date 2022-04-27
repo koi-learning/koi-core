@@ -118,7 +118,7 @@ class UserProxy(User):
                 raise ValueError("Unknown object type")
 
         for access in collection:
-            if BaseRoleId(role_uuid=UUID(access["role_uuid"])) == role.id:
+            if BaseRoleId(UUID(access["role_uuid"])) == role.id and UserId(UUID(access["user_uuid"])) == self.id:
                 return True
 
         return False
