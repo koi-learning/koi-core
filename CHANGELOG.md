@@ -12,3 +12,6 @@
 - unified the code loaders for remote and local code
 ### 0.3.5
 - multiple RunableInstances can be used (when using a command from the control namespace the number of allowed instances is now an optional parameter)
+### 0.3.6
+- added missing check for user id in "has_role"
+- fixed tests for role management
