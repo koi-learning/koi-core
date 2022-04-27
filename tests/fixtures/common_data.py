@@ -172,7 +172,7 @@ data_roles_model = [
         "role_uuid": "00000000-0000-1000-8000-000000000003",
         "role_name": "model_guest",
         "role_essential": False,
-        "role_description": "owner role",
+        "role_description": "guest role",
         "can_see_model": True,
         "instantiate_model": False,
         "edit_model": False,
@@ -223,7 +223,7 @@ data_access_general = [
 data_access_model = [
     {
         "access_uuid": "00000000-0000-1000-8000-000000000001",
-        "user_uuid": "00000000-0000-1000-8000-000000000001",
+        "user_uuid": "00000000-0000-1000-8000-000000000000",
         "role_uuid": "00000000-0000-1000-8000-000000000002",
         "model_uuid": "00000000-0001-1000-8000-000000000000",
     }
@@ -234,6 +234,12 @@ data_access_instance = [
         "access_uuid": "00000000-0000-1000-8000-000000000002",
         "user_uuid": "00000000-0000-1000-8000-000000000000",
         "role_uuid": "00000000-0000-1000-8000-000000000004",
+        "instance_uuid": "00000000-0002-1000-8000-000000000000",
+    },
+    {
+        "access_uuid": "00000000-0000-1000-8000-000000000003",
+        "user_uuid": "00000000-0000-1000-8000-000000000001",
+        "role_uuid": "00000000-0000-1000-8000-000000000005",
         "instance_uuid": "00000000-0002-1000-8000-000000000000",
     },
 ]
