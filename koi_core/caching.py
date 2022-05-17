@@ -13,7 +13,7 @@
 # GNU Lesser General Public License is distributed along with this
 # software and can be found at http://www.gnu.org/licenses/lgpl.html
 
-import datetime
+from datetime import datetime
 from functools import wraps
 from koi_core.api.common import KoiApiOfflineException
 from koi_core.caching_strategy import CachingStrategy
