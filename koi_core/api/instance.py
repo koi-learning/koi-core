@@ -27,6 +27,7 @@ _instance_mapping = {
     "description": "instance_description",
     "finalized": "finalized",
     "could_train": "could_train",
+    "last_modified": "last_modified",
 }
 
 

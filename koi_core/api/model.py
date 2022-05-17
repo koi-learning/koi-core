@@ -26,6 +26,7 @@ _model_mapping = {
     "name": "model_name",
     "description": "model_description",
     "finalized": "finalized",
+    "last_modified": "last_modified",
 }
 
 

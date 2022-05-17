@@ -15,3 +15,5 @@
 ### 0.3.6
 - added missing check for user id in "has_role"
 - fixed tests for role management
+### 0.3.7
+- added "last_modified" field to instances and models --> This needs koi_api version to be 0.3.3+!
