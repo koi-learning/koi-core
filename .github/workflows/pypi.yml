@@ -1,0 +1,27 @@
+name: pypi-publish
+
+on:
+  workflow_dispatch:
+  push:
+    tags:
+      - "v*.*.*"
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - name: "checkout code"
+        uses: actions/checkout@v2
+      
+      - name: "install dependencies"
+        run: pip install build
+      
+      - name: "build wheel and source distribution"
+        run: python -m build
+      
+      - name: Publish package to TestPyPI
+        uses: pypa/gh-action-pypi-publish@v1.5.0
+        with:
+          user: __token__
+          password: ${{ secrets.PYPI_TEST_TOKEN }}
+          repository_url: https://test.pypi.org/
