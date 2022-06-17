@@ -114,11 +114,12 @@ class RemoteCode(Code):
 
         path_comps.reverse()
 
-        zipPath = zipfile.Path(self._archive)
+        zipPath = ""
         for comp in path_comps:
-            zipPath = zipPath.joinpath(comp)
+            zipPath = zipPath + comp + "/"
+        zipPath = zipPath[:-1]
 
-        return zipPath.read_bytes()
+        return self._archive.read(zipPath)
 
     def toBytes(self):
         return self._data
