@@ -127,11 +127,17 @@ def test_offline_features_are_persistived():
 
     def find_offlineFeature(cls):
         methods = []
-        source = inspect.getsourcelines(cls)[0]
-        for i, line in enumerate(source):
-            line = line.strip()
-            if line.startswith("@offlineFeature"):
-                methods.append(source[i + 1].split("def")[1].split("(")[0].strip())
+        try:
+            source = inspect.getsourcelines(cls)[0]
+            for i, line in enumerate(source):
+                line = line.strip()
+                if line.startswith("@offlineFeature"):
+                    methods.append(source[i + 1].split("def")[1].split("(")[0].strip())
+        except OSError:
+            # the souce is not available, so we can't check the offlineFeature
+            # 3.6 does not support this for collections.abc.Hashable
+            # 3.8+ works fine
+            pass
         return methods
 
     classes = all_classes(koi_core)
