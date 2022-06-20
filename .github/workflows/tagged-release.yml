@@ -23,11 +23,21 @@ jobs:
       - name: "build wheel and source distribution"
         run: python -m build
 
-      - name: publish the package
+      - name: publish the package as latest
         uses: marvinpinto/action-automatic-releases@v1.2.1
         with:
           repo_token: "${{ secrets.GITHUB_TOKEN }}"
           automatic_release_tag: "latest"
+          prerelease: false
+          title: "Latest Build (${{ github.ref_name }})"
+          files: |
+            dist/koi_core-*.whl
+            dist/koi-core-*.tar.gz
+      
+      - name: publish the package as v*.*.*
+        uses: marvinpinto/action-automatic-releases@v1.2.1
+        with:
+          repo_token: "${{ secrets.GITHUB_TOKEN }}"
           prerelease: false
           title: "Release ${{ github.ref_name }}"
           files: |
