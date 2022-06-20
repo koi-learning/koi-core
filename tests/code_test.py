@@ -14,7 +14,7 @@
 # software and can be found at http://www.gnu.org/licenses/lgpl.html
 
 from io import BytesIO
-from zipfile import ZipFile
+from zipfile import ZipFile, is_zipfile
 from tempfile import TemporaryDirectory
 import koi_core as koi
 
@@ -41,6 +41,10 @@ def test_code_namelist(api_mock):
 
     # load as local code
     local_code = koi.resources.model.LocalCode(temp_dir.name)
+
+    local_code_bytes = local_code.toBytes()
+
+    assert is_zipfile(BytesIO(local_code_bytes))
 
     assert list(local_code.gen_namelist()) == list(remote_code.gen_namelist())
 
