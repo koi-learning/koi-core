@@ -13,7 +13,7 @@ setuptools.setup(
         "configargparse",
         "colorama",
     ],
-    python_requires=">=3.8",
+    python_requires=">=3.6",
     url="https://github.com/koi-learning/koi-core",
     project_urls={
         "Github": "https://github.com/koi-learning/koi-core",
