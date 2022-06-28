@@ -232,9 +232,9 @@ class ModelProxy(Model):
         self.pool.api.models.set_model_visual_plugin(self.id, value)
 
     @property
-    def _instance_ids(self) -> List[InstanceId]:
-        instance_ids, _ = self.pool.api.instances.get_instances(self.id)
-        return instance_ids
+    @cache
+    def _instance_ids(self, meta) -> List[InstanceId]:
+        return self.pool.api.instances.get_instances(self.id, meta)
 
     @property
     def instances(self) -> Iterable["Instance"]:
