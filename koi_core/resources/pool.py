@@ -70,7 +70,9 @@ class APIObjectPool:
     def id(self):
         return hash("APIObjectPool" + self.api._base_url)
 
-    def __init__(self, api: API) -> None:
+    def __init__(self, api: API, cachingStrategy=None) -> None:
+        if cachingStrategy is not None:
+            self.cachingStrategy = cachingStrategy
         self.api = api
 
     @cache
