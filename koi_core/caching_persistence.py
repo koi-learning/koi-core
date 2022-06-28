@@ -71,7 +71,6 @@ class CachingPersistence:
         else:
             file = gzip.GzipFile(file, "wb")
         pickle.dump(persistance, file)
-        file.truncate()
 
 
 class CachingPersistenceMock:
