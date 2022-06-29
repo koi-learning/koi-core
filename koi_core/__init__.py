@@ -28,6 +28,7 @@ from koi_core.resources.instance import Instance
 from koi_core.resources.pool import APIObjectPool, LocalOnlyObjectPool
 from koi_core.exceptions import KoiInitializationError
 import koi_core.control  # noqa: F401
+from koi_core.api import is_koi_reachable
 
 _isInitialized = False
 
@@ -68,6 +69,15 @@ def create_offline_object_pool(base_url: str, persistance_file: Union[IOBase, st
 
 def create_local_object_pool():
     return LocalOnlyObjectPool()
+
+
+def try_create_api_object_pool(
+    host: str, username: str, password: str, persistance_file: Union[IOBase, str] = None
+):
+    if is_koi_reachable(host):
+        return create_api_object_pool(host, username, password, persistance_file)
+    else:
+        return create_offline_object_pool(host, persistance_file)
 
 
 def local_instance(path, parameter) -> Instance:

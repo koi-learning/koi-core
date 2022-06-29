@@ -41,6 +41,14 @@ from datetime import datetime
 T = TypeVar("T")
 
 
+def is_reachable(base_url: str):
+    try:
+        ret = requests.get(base_url + "/health")
+        return ret.status_code == 200
+    except requests.exceptions.ConnectionError:
+        return False
+
+
 class BearerAuth(requests.auth.AuthBase):
     def __init__(self, token):
         self.token = token
