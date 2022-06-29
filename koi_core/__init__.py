@@ -22,6 +22,7 @@ from koi_core.caching_persistence import (
     setCachingPersistence,
 )
 from koi_core.api import API, OfflineAPI
+from koi_core.caching_strategy import LocalOnlyCachingStrategy
 from koi_core.resources.model import LocalCode
 from koi_core.resources.instance import Instance
 from koi_core.resources.pool import APIObjectPool, LocalOnlyObjectPool
@@ -59,10 +60,10 @@ def create_api_object_pool(
     return APIObjectPool(api)
 
 
-def create_offline_object_pool(persistance_file: Union[IOBase, str]):
-    setCachingPersistence(CachingPersistence(persistance_file))
-    api = OfflineAPI()
-    return APIObjectPool(api)
+def create_offline_object_pool(base_url: str, persistance_file: Union[IOBase, str]):
+    setCachingPersistence(CachingPersistence(persistance_file, is_offline=True))
+    api = OfflineAPI(base_url)
+    return APIObjectPool(api, LocalOnlyCachingStrategy())
 
 
 def create_local_object_pool():

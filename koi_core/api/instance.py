@@ -54,7 +54,7 @@ class APIInstances:
     def __init__(self, base: BaseAPI):
         self.base = base
 
-    def get_instances(self, id: ModelId):
+    def get_instances(self, id: ModelId, meta: CachingMeta = None):
         data, meta = self.base._GET(self.base._build_path(id) + "/instance")
         return (
             [InstanceId(id=id, instance_uuid=UUID(d["instance_uuid"])) for d in data],

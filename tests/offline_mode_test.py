@@ -134,7 +134,7 @@ def test_offline_features_are_persistived():
                 if line.startswith("@offlineFeature"):
                     methods.append(source[i + 1].split("def")[1].split("(")[0].strip())
         except OSError:
-            # the souce is not available, so we can't check the offlineFeature
+            # the source is not available, so we can't check the offlineFeature
             # 3.6 does not support this for collections.abc.Hashable
             # 3.8+ works fine
             pass
@@ -169,7 +169,7 @@ def test_offline_api(offlineOrConnectionError, api_mock):
     api_mock.requests_mock.reset_mock()
     persistence.seek(0)
     koi_core.init()
-    pool = koi_core.create_offline_object_pool(persistance_file=persistence)
+    pool = koi_core.create_offline_object_pool("http://base", persistance_file=persistence)
     instance = pool.instance(
         InstanceId(uuid.UUID("00000000-0001-1000-8000-000000000000"), uuid.UUID("00000000-0002-1000-8000-000000000000"),)
     )
@@ -183,7 +183,7 @@ def test_offline_api(offlineOrConnectionError, api_mock):
         api_mock.set_connectionError()
     persistence.seek(0)
     koi_core.init()
-    pool = koi_core.create_offline_object_pool(persistance_file=persistence)
+    pool = koi_core.create_offline_object_pool("http://base", persistance_file=persistence)
     instance = pool.instance(
         InstanceId(uuid.UUID("00000000-0001-1000-8000-000000000000"), uuid.UUID("00000000-0002-1000-8000-000000000000"),)
     )

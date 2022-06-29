@@ -27,8 +27,9 @@ class CachingPersistence:
     _caches: "Dict[int, (CachingObject, CachingDict)]"
     _file: "Union[IOBase,str]"
 
-    def __init__(self, file):
+    def __init__(self, file, is_offline=False):
         self._file = file
+        self._is_offline = is_offline
         try:
             if not isinstance(file, IOBase):
                 file = gzip.GzipFile(self._file, "rb")
@@ -50,13 +51,18 @@ class CachingPersistence:
         return self._caches[id][1]
 
     def persistify(self):
+        # do not persistify if we are offline
+        if self._is_offline:
+            return
+
+        # construct persistence dict
         persistance = dict()
         for objectKey, objectVal in self._caches.items():
             objectdict = dict()
             for key, val in objectVal[1].items():
                 keyDict = dict()
                 for indexkey, indexVal in val.items():
-                    if objectVal[0].cachingStrategy.shouldPersist(
+                    if objectVal[0] is not None and objectVal[0].cachingStrategy.shouldPersist(
                         type(objectVal[0]), key, indexVal[1]
                     ):
                         keyDict[indexkey] = indexVal
@@ -71,7 +77,6 @@ class CachingPersistence:
         else:
             file = gzip.GzipFile(file, "wb")
         pickle.dump(persistance, file)
-        file.truncate()
 
 
 class CachingPersistenceMock:

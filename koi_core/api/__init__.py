@@ -35,8 +35,8 @@ class API(RequestsAPI):
 
 
 class OfflineAPI(BaseAPI):
-    def __init__(self):
-        super().__init__()
+    def __init__(self, base_url: str):
+        super().__init__(base_url)
 
         self.models = APIModels(self)
         self.instances = APIInstances(self)

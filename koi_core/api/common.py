@@ -157,8 +157,8 @@ class BaseAPI:
     """This class will always raise a KoiOfflineException. I.e. this class will respond
     like a normal API which is always offline"""
 
-    def __init__(self):
-        self._base_url = "offline://"
+    def __init__(self, base_url: str):
+        self._base_url = base_url
         self.online = False
 
     def reconnect(self):
