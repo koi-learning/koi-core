@@ -17,3 +17,12 @@
 - fixed tests for role management
 ### 0.3.7
 - added "last_modified" field to instances and models --> This needs koi_api version to be 0.3.3+!
+### 0.3.8
+- made koi_core compatible with Python3.6
+- added tagged releases on github
+### 0.3.9
+- fixed the persistence functions
+- using UUID as id for every object as hash() is salted for strings since Py3.3
+## 0.4
+- added `is_koi_reachable(base_url: str)`
+- added `try_create_api_object_pool(...)`
