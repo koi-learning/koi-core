@@ -61,7 +61,7 @@ def create_api_object_pool(
 
 
 def create_offline_object_pool(base_url: str, persistance_file: Union[IOBase, str]):
-    setCachingPersistence(CachingPersistence(persistance_file))
+    setCachingPersistence(CachingPersistence(persistance_file, is_offline=True))
     api = OfflineAPI(base_url)
     return APIObjectPool(api, LocalOnlyCachingStrategy())
 
