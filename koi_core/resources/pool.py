@@ -16,7 +16,7 @@
 from koi_core.resources.ids import GeneralRoleId, ModelRoleId, InstanceRoleId, InstanceId, ModelId, SampleId, UserId
 from koi_core.caching import cache, indexedCache, offlineFeature, setIndexedCache
 from koi_core.caching_strategy import ExpireCachingStrategy, LocalOnlyCachingStrategy
-
+from uuid import uuid3, NAMESPACE_URL
 from typing import Iterable
 
 from koi_core.resources.instance import Instance, InstanceProxy, LocalInstance
@@ -68,7 +68,7 @@ class APIObjectPool:
 
     @property
     def id(self):
-        return hash("APIObjectPool" + self.api._base_url)
+        return hash(uuid3(NAMESPACE_URL, "APIObjectPool" + self.api._base_url))
 
     def __init__(self, api: API, cachingStrategy=None) -> None:
         if cachingStrategy is not None:
