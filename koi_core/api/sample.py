@@ -16,7 +16,7 @@
 from uuid import UUID
 from typing import Tuple
 
-from .common import BaseAPI, _parse, _encode
+from koi_core.api.common import BaseAPI, _parse, _encode
 from koi_core.caching import CachingMeta
 from koi_core.resources.ids import InstanceId, SampleId, SampleDatumId, SampleLableId
 
