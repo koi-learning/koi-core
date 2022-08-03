@@ -13,13 +13,17 @@
 # GNU Lesser General Public License is distributed along with this
 # software and can be found at http://www.gnu.org/licenses/lgpl.html
 
-from koi_core.api.common import BaseAPI, RequestsAPI
-from .model import APIModels
-from .instance import APIInstances
-from .sample import APISamples
-from .user import APIUsers
-from .role import APIRoles
-from .access import APIAccess
+from koi_core.api.common import BaseAPI, RequestsAPI, is_reachable
+from koi_core.api.model import APIModels
+from koi_core.api.instance import APIInstances
+from koi_core.api.sample import APISamples
+from koi_core.api.user import APIUsers
+from koi_core.api.role import APIRoles
+from koi_core.api.access import APIAccess
+
+
+def is_koi_reachable(host: str) -> bool:
+    return is_reachable(host)
 
 
 class API(RequestsAPI):
