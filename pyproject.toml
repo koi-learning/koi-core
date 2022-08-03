@@ -1,0 +1,23 @@
+[build-system]
+requires = ["setuptools>=61.0.0"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "koi-core"
+version = "0.3.10"
+description = "Runtime for the KOI-System including koi-worker"
+readme = "README.md"
+requires-python = ">=3.6"
+classifiers = ["Programming Language :: Python :: 3", "Operating System :: OS Independent", "License :: OSI Approved :: GNU Lesser General Public License v3 (LGPLv3)"]
+
+dependencies = [
+    "requests",
+    "configargparse ",
+    "colorama",
+]
+
+[project.scripts]
+koi-worker = "koi_core.worker:main"
+
+[project.urls]
+"Homepage" = "https://github.com/koi-learning"
