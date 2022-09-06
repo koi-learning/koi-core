@@ -30,3 +30,6 @@
 - removed setup.py
 - added pyproject.toml
 - use of entrypoints instead of scripts
+### 0.4.2
+- changed some dt.now() to dt.utcnow()
+- removed obsolete koi-worper.py from root directory

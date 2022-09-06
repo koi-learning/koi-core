@@ -21,7 +21,7 @@ from .common_data import data_users
 
 
 def login(request, context):
-    token_valid = datetime.now() + timedelta(minutes=500)
+    token_valid = datetime.utcnow() + timedelta(minutes=500)
 
     context.status_code = 200
     return {
