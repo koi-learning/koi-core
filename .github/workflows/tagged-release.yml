@@ -30,15 +30,18 @@ jobs:
         run: docker build . --file cpu-tf.Dockerfile --tag $IMAGE_NAME_TF --label "runnumber=${GITHUB_RUN_ID}"
 
       - name: publish the package as Release v*.*.*
-        uses: marvinpinto/action-automatic-releases@v1.2.1
+        uses: softprops/action-gh-release@v1
         with:
-          repo_token: "${{ secrets.GITHUB_TOKEN }}"
-          prerelease: false
-          title: "Release ${{ github.ref_name }}"
+          name: "Release ${{ github.ref_name }}"
+          body_path: CHANGELOG.md
+          generate_release_notes: false
           files: |
             dist/koi_core-*.whl
             dist/koi-core-*.tar.gz
       
+      - name: Log in to registry
+        run: echo "${{ secrets.GITHUB_TOKEN }}" | docker login ghcr.io -u $ --password-stdin
+
       - name: "publish docker image"
         run: |
           IMAGE_ID=ghcr.io/${{ github.repository_owner }}/$IMAGE_NAME_TF
