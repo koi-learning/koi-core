@@ -17,7 +17,6 @@
 
 import logging
 import configargparse
-import colorama
 import signal
 import sys
 import multiprocessing
@@ -33,21 +32,19 @@ def sigint_handling(signum, frame):
     global signal_interrupt
     if signal_interrupt:
         print(
-            colorama.Fore.RED + "\nThe worker will forcefully be turned off RIGHT NOW. "
+            "\nThe worker will forcefully be turned off RIGHT NOW. "
             "You could'nt wait a few minutes, could you? "
-            "Essentially you have just killed me •`_´•" + colorama.Fore.RESET
+            "Essentially you have just killed me •`_´•"
         )
         sys.exit(0)
     else:
         signal_interrupt = True
         print(
-            colorama.Fore.RED
-            + "\nThe worker will gracefully terminate on the next opportunity. "
+            "\nThe worker will gracefully terminate on the next opportunity. "
             "If a training is in progress this can, however, take a bit longer :( "
             "So if you really want to quit press CTRC-C again. "
             "But we will loose all unsaved progress then :'(. "
             "So better get a cup of coffe instead and let me calculate things :D\n"
-            + colorama.Fore.RESET
         )
 
 
@@ -122,9 +119,6 @@ def main():
 
     if not opt.start_method == "NONE":
         multiprocessing.set_start_method(opt.start_method)
-
-    # initialize colored output for windows
-    colorama.init()
 
     # replace default signal interrupt handling to enable graceful exit
     signal.signal(signal.SIGINT, sigint_handling)

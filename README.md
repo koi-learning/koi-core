@@ -32,20 +32,23 @@ It does not depend on ML-Frameworks and enables the user to choose what is best 
 If you want to install *koi-core* for production use, simply run:
 > pip install git+https://github.com/koi-learning/koi-core.git
 
-For development purposes it is best to check out the repository and install all dependencies listet in *requirements.txt*
+For development purposes it is best to check out the repository and run 
+```bash
+pip install -e .[develop]
+```
 
 ## Using Docker
-If you want to use *koi-core* from within a docker container see the included example [dockerfile](dockerfile).
+If you want to use *koi-core* from within a docker container see the included example [dockerfile](cpu-tf.Dockerfile).
 
 Switch to the source folder and build it with: 
 ```
-docker build . -t <name of your container>
+docker build . -t <name of your image> --file cpu-tf.Dockerfile
 ```
 
 To use the worker inside the docker container run:
 
 ```
-docker exec -it <name of your container> koi-worker.py <options>
+docker run  <name of your image> -s SERVER -u USER -p PASSWORD <more options>
 ```
 
 For a complete setup using docker see [koi-deploy](https://github.com/koi-learning/koi-deploy) 
@@ -89,7 +92,7 @@ import koi_core as koi
 koi.init()
 ```
 
-Creeate an object pool by using:
+Create an object pool by using:
 ```
 pool = koi.create_api_object_pool("koi-host", "username", "password")
 ```
@@ -139,7 +142,7 @@ On Linux:
 pip install virtualenv
 virtualenv venv
 source ./venv/bin/activate
-pip install -r requirements.txt
+pip install -e .[develop]
 ```
 
 On Windows:
@@ -147,7 +150,7 @@ On Windows:
 pip install virtualenv
 virtualenv venv
 .\venv\Scripts\activate
-pip install -r requirements.txt
+pip install -e .[develop]
 ```
 
 ## Tests
@@ -156,13 +159,12 @@ To run the tests simple run
 
 > pytest
 
-or use your IDEs Pytest plugin. For VS Code we suggest: "Python Test Explorer for Visual Studio Code"
+or use your IDEs Pytest plugin.
 
 if you want to generate a coverage report execute:
 
 ```
-coverage run --source=koi_core --branch -m pytest
-coverage xml
+pytest --cov-branch --cov=./koi_core --cov-report=xml
 ```
 
 # Copying & Contributing
