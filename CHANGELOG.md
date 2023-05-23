@@ -33,3 +33,10 @@
 ### 0.4.2
 - changed some dt.now() to dt.utcnow()
 - removed obsolete koi-worper.py from root directory
+### 0.4.3
+- removed old python version from CI
+- overhauled the docker scripts
+- added tagged builds for docker
+- register docker containers in github registry
+### 0.4.4
+- removed unwanted 'continue' from koi-worker; added explicit cast for wait time

@@ -229,11 +229,10 @@ def main():
 
             retries -= 1
             logging.error("koi api is offline, retrying in %d seconds", opt.sleep_retry)
-            sleep(opt.sleep_retry)
+            sleep((float)(opt.sleep_retry))
 
-            # set the online flag an try to athenticate
+            # set the online flag and try to athenticate
             pool.api.reconnect()
-            continue
 
     logging.info("stopped")
     sys.exit(0)
