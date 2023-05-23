@@ -263,9 +263,8 @@ class RequestsAPI(BaseAPI):
         self.online = True
 
     def reconnect(self):
-        if not self.online:
-            self.online = True
-            self.authenticate()
+        self.online = True
+        self.authenticate()
 
     def authenticate(self):
         if not self.online:

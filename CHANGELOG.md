@@ -40,3 +40,5 @@
 - register docker containers in github registry
 ### 0.4.4
 - removed unwanted 'continue' from koi-worker; added explicit cast for wait time
+### 0.4.5
+- force a reconnect even of status variable indicates we are online
