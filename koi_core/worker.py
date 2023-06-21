@@ -23,6 +23,8 @@ import multiprocessing
 import koi_core as koi
 from koi_core.exceptions import KoiApiOfflineException
 from time import sleep
+from datetime import datetime
+
 
 signal_interrupt = False
 
@@ -114,6 +116,13 @@ def main():
         default=60,
         help="Number of seconds to wait before a retry",
     )
+    p.add(
+        "-w",
+        "--wait-training",
+        type=int,
+        default=10,
+        help="Number of seconds a instance has to be untouched before atempting to train it",
+    )
 
     opt = p.parse_args()
 
@@ -193,9 +202,11 @@ def main():
                             instance.name,
                         )
                         continue
-
+                    
+                    # seconds since last instance update
+                    sec_since_last_change = (datetime.utcnow() - instance.last_modified).total_seconds()
                     # train the instance if its ready to train or the user forces it
-                    if opt.force or instance.could_train:
+                    if opt.force or (instance.could_train and sec_since_last_change > opt.wait_training):
                         try:
                             logging.info(
                                 "start to train instance %s/%s", model.name, instance.name
