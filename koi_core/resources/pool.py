@@ -154,7 +154,8 @@ class APIObjectPool:
     def sample(self, id: SampleId, meta) -> Sample:
         return SampleProxy(self, id), meta
 
-    def new_sample(self, id: InstanceId) -> Sample:
+    def new_sample(self, id: InstanceId, cached:bool=True) -> Sample:
         sample = SampleProxy(self, id)
-        setIndexedCache(self, "sample", sample.id, sample)
+        if cached:
+            setIndexedCache(self, "sample", sample.id, sample)
         return sample
