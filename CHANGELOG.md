@@ -42,3 +42,6 @@
 - removed unwanted 'continue' from koi-worker; added explicit cast for wait time
 ### 0.4.5
 - force a reconnect even of status variable indicates we are online
+### 0.4.6
+- optionally skip the caching of new samples, usefull if we just want to send them and never consume or read back.
+- added optional sleep time for instances that just changed, this prevents premature training of instances while someone else is writing to them#
