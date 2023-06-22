@@ -204,7 +204,8 @@ def main():
                         continue
                     
                     # seconds since last instance update
-                    sec_since_last_change = (datetime.utcnow() - instance.last_modified).total_seconds()
+                    last_modified = datetime.fromisoformat(instance.last_modified)
+                    sec_since_last_change = (datetime.utcnow() - last_modified).total_seconds()
                     # train the instance if its ready to train or the user forces it
                     if opt.force or (instance.could_train and sec_since_last_change > opt.wait_training):
                         try:

@@ -13,7 +13,6 @@
 # GNU Lesser General Public License is distributed along with this
 # software and can be found at http://www.gnu.org/licenses/lgpl.html
 
-from datetime import datetime
 from koi_core.caching import cache, offlineFeature
 from koi_core.resources.model import Model
 from koi_core.resources.ids import InstanceId, ModelId, SampleId, DescriptorId
@@ -183,7 +182,7 @@ class InstanceBasicFields:
     description: str
     finalized: bool
     could_train: bool
-    last_modified: datetime
+    last_modified: str
 
 
 class InstanceProxy(Instance):
