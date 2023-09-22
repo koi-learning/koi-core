@@ -204,7 +204,7 @@ def main():
                         continue
                     
                     # seconds since last instance update
-                    last_modified = datetime.fromisoformat(instance.samples_last_modified)
+                    last_modified = datetime.fromisoformat(instance.sample_last_modified)
                     sec_since_last_change = (datetime.utcnow() - last_modified).total_seconds()
                     # train the instance if its ready to train or the user forces it
                     if opt.force or (instance.could_train and sec_since_last_change > opt.wait_training):
@@ -218,6 +218,13 @@ def main():
                         except Exception:
                             logging.exception(
                                 "instance %s/%s had an exception", model.name, instance.name
+                            )
+                    else:
+                        if (instance.could_train and sec_since_last_change < opt.wait_training):
+                            logging.info(
+                                "skipping instance %s/%s, as data was not present or still changing.",
+                                model.name,
+                                instance.name
                             )
 
             # break here if the user selected to run once
