@@ -183,6 +183,7 @@ class InstanceBasicFields:
     finalized: bool
     could_train: bool
     last_modified: str
+    sample_last_modified: str
 
 
 class InstanceProxy(Instance):

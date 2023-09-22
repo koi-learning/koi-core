@@ -28,7 +28,7 @@ _instance_mapping = {
     "finalized": "finalized",
     "could_train": "could_train",
     "last_modified": "last_modified",
-    "samples_last_modified": "samples_last_modified",
+    "sample_last_modified": "sample_last_modified",
 }
 
 
