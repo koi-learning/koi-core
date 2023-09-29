@@ -3,7 +3,7 @@
 # convenience, we added tensorflow-hub to the image, so you can use pretrained
 # models from TensorFlow Hub.
 
-FROM tensorflow/tensorflow:2.11.0
+FROM tensorflow/tensorflow:2.13.0
 
 COPY ./dist/ /wheels/
 
