@@ -244,7 +244,7 @@ def main():
             if retries == 0:
                 # if the retry counter is initilizes with a negative value, we will try forever
                 logging.error("koi api is offline, giving up")
-                raise ex
+                sys.exit(-1)
 
             retries -= 1
             logging.error("koi api is offline, retrying in %d seconds", opt.sleep_retry)
