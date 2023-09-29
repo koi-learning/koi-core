@@ -251,7 +251,10 @@ def main():
             sleep((float)(opt.sleep_retry))
 
             # set the online flag and try to athenticate
-            pool.api.reconnect()
+            try:
+                pool.api.reconnect()
+            except:
+                logging.error("could not reconnect to koi api")
 
     logging.info("stopped")
     sys.exit(0)
