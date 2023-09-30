@@ -2,12 +2,21 @@
 requires = ["setuptools>=61.0.0"]
 build-backend = "setuptools.build_meta"
 
+[tools.setuptools]
+packages = [
+    "koi_core",
+    "koi_core.api",
+    "koi_core.control",
+    "koi_core.data",
+    "koi_core.resources"
+]
+
 [project]
 name = "koi-core"
-version = "0.4.5"
+version = "0.4.6"
 description = "Runtime for the KOI-System including koi-worker"
 readme = "README.md"
-requires-python = ">=3.8,<3.11"
+requires-python = ">=3.8,<3.12"
 classifiers = ["Programming Language :: Python :: 3", "Operating System :: OS Independent", "License :: OSI Approved :: GNU Lesser General Public License v3 (LGPLv3)"]
 
 dependencies = [

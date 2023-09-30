@@ -28,6 +28,7 @@ _instance_mapping = {
     "finalized": "finalized",
     "could_train": "could_train",
     "last_modified": "last_modified",
+    "sample_last_modified": "sample_last_modified",
 }
 
 
@@ -96,9 +97,6 @@ class APIInstances:
     def set_instance_training_data(self, id: InstanceId, data: bytes):
         self.base._POST_raw(self.base._build_path(id) + "/training", data=data)
 
-    # endregion
-
-    # region descriptor
     def get_descriptors(self, id: InstanceId, meta: CachingMeta = None):
         data, meta = self.base._GET(self.base._build_path(id) + "/descriptor")
         return (

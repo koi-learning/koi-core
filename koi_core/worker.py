@@ -23,6 +23,8 @@ import multiprocessing
 import koi_core as koi
 from koi_core.exceptions import KoiApiOfflineException
 from time import sleep
+from datetime import datetime
+
 
 signal_interrupt = False
 
@@ -114,6 +116,13 @@ def main():
         default=60,
         help="Number of seconds to wait before a retry",
     )
+    p.add(
+        "-w",
+        "--wait-training",
+        type=int,
+        default=10,
+        help="Number of seconds a instance has to be untouched before atempting to train it",
+    )
 
     opt = p.parse_args()
 
@@ -193,9 +202,12 @@ def main():
                             instance.name,
                         )
                         continue
-
+                    
+                    # seconds since last instance update
+                    last_modified = datetime.fromisoformat(instance.sample_last_modified)
+                    sec_since_last_change = (datetime.utcnow() - last_modified).total_seconds()
                     # train the instance if its ready to train or the user forces it
-                    if opt.force or instance.could_train:
+                    if opt.force or (instance.could_train and sec_since_last_change > opt.wait_training):
                         try:
                             logging.info(
                                 "start to train instance %s/%s", model.name, instance.name
@@ -206,6 +218,13 @@ def main():
                         except Exception:
                             logging.exception(
                                 "instance %s/%s had an exception", model.name, instance.name
+                            )
+                    else:
+                        if (instance.could_train and sec_since_last_change < opt.wait_training):
+                            logging.info(
+                                "skipping instance %s/%s, as data was not present or still changing.",
+                                model.name,
+                                instance.name
                             )
 
             # break here if the user selected to run once
@@ -225,14 +244,17 @@ def main():
             if retries == 0:
                 # if the retry counter is initilizes with a negative value, we will try forever
                 logging.error("koi api is offline, giving up")
-                raise ex
+                sys.exit(-1)
 
             retries -= 1
             logging.error("koi api is offline, retrying in %d seconds", opt.sleep_retry)
             sleep((float)(opt.sleep_retry))
 
             # set the online flag and try to athenticate
-            pool.api.reconnect()
+            try:
+                pool.api.reconnect()
+            except:
+                logging.error("could not reconnect to koi api")
 
     logging.info("stopped")
     sys.exit(0)

@@ -13,7 +13,6 @@
 # GNU Lesser General Public License is distributed along with this
 # software and can be found at http://www.gnu.org/licenses/lgpl.html
 
-from datetime import datetime
 from koi_core.caching import cache, offlineFeature
 from koi_core.resources.model import Model
 from koi_core.resources.ids import InstanceId, ModelId, SampleId, DescriptorId
@@ -183,7 +182,8 @@ class InstanceBasicFields:
     description: str
     finalized: bool
     could_train: bool
-    last_modified: datetime
+    last_modified: str
+    sample_last_modified: str
 
 
 class InstanceProxy(Instance):
@@ -285,8 +285,8 @@ class InstanceProxy(Instance):
         self.descriptors = InstanceDescriptorAccessor(self)
         self.parameter = InstanceParameterAccessor(self)
 
-    def new_sample(self):
-        sample = self.pool.new_sample(self.id)
+    def new_sample(self, remote_only:bool=False):
+        sample = self.pool.new_sample(self.id, not remote_only)
         return sample
 
     def merge(self, instances: Iterable):

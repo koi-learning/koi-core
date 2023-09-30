@@ -23,12 +23,12 @@ import numpy as np
 @cache
 def get_np(self: Union[SampleDatum, SampleLabel], meta) -> np.ndarray:
     f = BytesIO(self.raw)
-    return np.load(f), meta
+    return np.load(f, allow_pickle=False), meta
 
 
 def set_np(self: Union[SampleDatum, SampleLabel], value: np.ndarray) -> None:
     f = BytesIO()
-    np.save(f, value)
+    np.save(f, value, allow_pickle=False)
     self.raw = f.getvalue()
     setCache(self, 'np', None)
 

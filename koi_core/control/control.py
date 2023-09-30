@@ -60,6 +60,8 @@ def _set_instance(instance: Instance, max_instances: int = 1):
 
 
 def train(instance: Instance, batch_iterable=None, dev=False, max_instances=1):
+    global _runable_instance
+
     if dev:
         temp_dir = TemporaryDirectory()
         model = instance.load_code(temp_dir.name)
@@ -67,10 +69,16 @@ def train(instance: Instance, batch_iterable=None, dev=False, max_instances=1):
         temp_dir.cleanup()
     else:
         _set_instance(instance, max_instances)
-        _runable_instance.train(batch_iterable)
+        try:
+            _runable_instance.train(batch_iterable)
+        except:
+            kill_runable_instance()
+            raise
 
 
 def infer(instance: Instance, data, dev=False, model=None, max_instances=1) -> List[Any]:
+    global _runable_instance
+
     if dev:
         temp_dir = None
 
@@ -86,7 +94,27 @@ def infer(instance: Instance, data, dev=False, model=None, max_instances=1) -> L
 
     else:
         _set_instance(instance, max_instances)
-        return _runable_instance.infer(data)
+        try:
+            return _runable_instance.infer(data)
+        except:
+            kill_runable_instance()
+            raise
+
+
+def kill_runable_instance():
+    global _runable_instance
+    global _active_instances
+
+    if _runable_instance is None:
+        return
+    
+    instance = _runable_instance.instance
+
+    _runable_instance.terminate()
+    _runable_instance = None
+
+    if instance in _active_instances:
+        del _active_instances[instance]
 
 
 def terminate():
