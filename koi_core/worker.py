@@ -123,6 +123,12 @@ def main():
         default=10,
         help="Number of seconds a instance has to be untouched before atempting to train it",
     )
+    p.add(
+        "--stay-offline",
+        action="store_true",
+        help="Do not try to connect to the server. This will only work if the cache is already filled",
+        default=False,
+    )
 
     opt = p.parse_args()
 
@@ -148,7 +154,7 @@ def main():
 
     # connect using the credentials
     logging.info("connecting to %s", opt.server)
-    pool = koi.create_api_object_pool(opt.server, opt.user, opt.password)
+    pool = koi.create_api_object_pool(opt.server, opt.user, opt.password, opt.stay_offline)
 
     while 1:
         try:

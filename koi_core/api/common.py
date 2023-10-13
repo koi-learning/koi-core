@@ -84,7 +84,7 @@ def authenticate_locked(baseAPI: "BaseAPI", force=False):
 
 
 def common_authenticated(self: "BaseAPI", request_func, *args, **kwargs):
-    if not self.online:
+    if not self.online and self.stay_offline:
         raise KoiApiOfflineException()
 
     authenticate_locked(self)
@@ -254,13 +254,14 @@ class BaseAPI:
 
 
 class RequestsAPI(BaseAPI):
-    def __init__(self, base_url: str, username: str, password: str):
+    def __init__(self, base_url: str, username: str, password: str, stay_offline=False):
         self._lock = Lock()
         self._base_url = base_url
         self._user = username
         self._password = password
         self._session = requests.Session()
         self.online = True
+        self.stay_offline = stay_offline
 
     def reconnect(self):
         self.online = True

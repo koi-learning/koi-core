@@ -27,8 +27,8 @@ def is_koi_reachable(host: str) -> bool:
 
 
 class API(RequestsAPI):
-    def __init__(self, base_url: str, username: str, password: str):
-        super().__init__(base_url, username, password)
+    def __init__(self, base_url: str, username: str, password: str, stay_offline=False):
+        super().__init__(base_url, username, password, stay_offline)
 
         self.models = APIModels(self)
         self.instances = APIInstances(self)

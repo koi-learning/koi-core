@@ -53,11 +53,11 @@ def deinit():
 
 
 def create_api_object_pool(
-    host: str, username: str, password: str, persistance_file: Union[IOBase, str] = None
+    host: str, username: str, password: str, persistance_file: Union[IOBase, str] = None, stay_offline=False
 ):
     if persistance_file:
         setCachingPersistence(CachingPersistence(persistance_file))
-    api = API(host, username, password)
+    api = API(host, username, password, stay_offline)
     return APIObjectPool(api)
 
 
